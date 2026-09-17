@@ -236,6 +236,17 @@ GPT-2 small，前缀 1000 token，生成第 1000 个 token 这一步：
 - **多轮对话默认从第一句重新编码，prefix caching 用来避免。** 对话被序列化成一条长序列：system → user₁ → assistant₁ → user₂ → …。API 是无状态的，每个新请求原则上要把整段历史重新 prefill。但 causal 结构保证：位置 i 的 K、V 只依赖 token ≤ i，所以**只要前缀 token 序列逐位相同，它的 K、V 就逐位相同，可以复用**。实现上把 cache 按前缀分块存起来，用前缀 token 序列（的哈希）做 key，新请求命中多长前缀就跳过多长 prefill，只算新增的 suffix。任何一处改动（哪怕改一个字）会让从那一位开始的全部 cache 失效，所以 system prompt 要放最前、动态内容放最后。
 
   公开边界：OpenAI API 的 prompt caching 是文档化的 Public system behavior（按前缀命中计费折扣；GPT-5.6 提供显式 cache breakpoint，见 [[function-calling-responses-api]]）；服务端如何存储、淘汰和跨机器共享 cache 未公开。
+- **cache 在 token 被"吃进去"的那次前向里更新，不是在它被采样出来之后。** 每步 decode 的顺序是：把上一步采样出的 token 作为输入 → 逐层算它的 K、V 并追加进该层 cache → 该层注意力读 cache → … → LM head → 采样出下一个 token。所以一个 token 的 K、V 进入 cache 的时刻，是它作为输入被处理的那一步，比它被采样出来晚一步；刚采样出的 token 此刻还不在 cache 里。生成 10 个 token 就更新 10 次，每次追加一列，但相位差一。
+
+```text
+prefill : 输入 p1..pTp                → cache 长 Tp        → 采样 g1
+decode 1: 输入 g1（写入 g1 的 K、V）    → cache 长 Tp+1      → 采样 g2
+decode 2: 输入 g2（写入 g2 的 K、V）    → cache 长 Tp+2      → 采样 g3
+…
+decode n: 输入 gn                      → cache 长 Tp+n      → 采样 g(n+1)
+```
+
+  推论：更新发生在同一次前向内部、逐层进行（第 ℓ 层写入后紧接着第 ℓ 层读取），不是前向结束后统一写；最后一个采样出的 token（如 EOS）如果不再送回模型，它的 K、V 永远不会被算。
 - **LM head 的代价**：按每个生成 token 计是 d·V，与训练一样，没有省。省的是 prefill 阶段前 T_p − 1 个位置不用算（下一个 token 已知），以及避免朴素实现每步对整个前缀重算 logits 的 O(N²) 冗余。
 
 ## 6. Scaling 维度
