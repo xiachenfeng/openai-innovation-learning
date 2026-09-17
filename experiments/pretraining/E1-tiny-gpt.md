@@ -18,7 +18,7 @@
 ## Environment
 
 - 机器：用户的 NVIDIA 4090 云主机（CUDA），本地 Mac 无 torch；
-- 依赖：Python ≥ 3.10，torch；
+- 依赖：Python ≥ 3.10（类型标注用了 `X | None` 语法），torch ≥ 2.0（教练用 2.14.0 CPU 版验证）；4090 上需 CUDA 构建，用 `torch.cuda.is_available()` 确认；无其他第三方依赖；
 - 数据：tinyshakespeare（约 1MB 公开文本，脚本自动下载，失败退回内置文本）。
 
 ## Implementation
