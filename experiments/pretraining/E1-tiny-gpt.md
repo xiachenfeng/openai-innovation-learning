@@ -24,13 +24,26 @@
 ## Implementation
 
 - `tiny_gpt/model.py`：GPTConfig、CausalSelfAttention（步 2～9）、MLP（步 12）、Block（步 1～13）、GPT（图 2）。两处 `TODO(you)`：causal mask、交叉熵；
-- `tiny_gpt/train.py`：字符级词表、get_batch（input 与右移一位的 target）、smoke 模式、AdamW 训练循环、采样。
+- `tiny_gpt/train.py`：字符级词表、get_batch（input 与右移一位的 target）、smoke 模式、AdamW 训练循环、采样；
+- `tiny_gpt/sft.py`（第二阶段）：解析台词、GPT-1 式输入拼法、词表扩 `<s>`/`<e>` 两个 token、GPTClassifier（Θ + W_y）、L3 = L2 + λ·L1、结果写 CSV。三处 `TODO(you)`：输入拼法、取 `<e>` 位置的 h、总损失；
+- `tiny_gpt/run_stage2.sh`：16 组对照一次跑完并汇总。
 
 默认配置：L=4，d=128，h=4，T=128，非 embedding 参数 ≈ 12·4·128² ≈ 786k。
 
 ## Variables
 
-本周无变量，只验证可运行。下周加：pretrain 步数、SFT 数据、从零训练对照。
+第一阶段无变量。第二阶段（2026-09-17 设计，对应 GPT-1 论文表 5 的消融）：
+
+| 项 | 设计 |
+|---|---|
+| 预训练 | tinyshakespeare 2000 步（`python train.py --steps 2000`） |
+| 下游任务 | 从语料抽 "SPEAKER:\n台词" 对，取出现最多的 5 个角色（GLOUCESTER、DUKE VINCENTIO、MENENIUS、ROMEO、PETRUCHIO），台词切成 ≤126 字符的片段，只看片段猜说话人。共 876 段 / 约 1480 片段，按整段分 80/20 防泄漏；测试集多数类基线约 0.25 |
+| 输入拼法 | `<s>` 台词 `<e>`，字符级词表加 2 个新 token；取 `<e>` 位置的 h 过 W_y |
+| 对照 | 同一 SFT 数据与步数：预训练权重起 vs 随机起 |
+| 变量 | 标注量 100 vs 1000；λ = 0 vs 0.5；微调学习率 6e-5 vs 3e-4；共 2×2×2×2 = 16 组，`bash run_stage2.sh` 一次跑完 |
+| 预期 | 预训练组在 100 条时优势最大；λ 在 1000 条时才有帮助；大学习率缩小预训练组优势。任务对 80 万参数的字符级模型偏难，绝对准确率可能只有 0.3～0.5，看的是组间差 |
+
+用户填三处空：输入拼法函数、取 `<e>` 位置 h 的那一行、总损失合成。
 
 ## Metrics
 
@@ -43,6 +56,8 @@
 cd experiments/pretraining/tiny_gpt
 python train.py --smoke
 python train.py --steps 2000
+bash run_stage2.sh          # 第二阶段 16 组对照
+python sft.py --summary     # 汇总表
 ```
 
 ## Results
@@ -89,7 +104,7 @@ smoke test passed
 
 ## Cost
 
-- 算力：4090 单卡，smoke < 1 分钟（已用）；2000 步预计 2～5 分钟（待用）；本地 CPU 验证约 1 分钟；
+- 算力：4090 单卡，smoke < 1 分钟（已用）；2000 步预计 2～5 分钟（待用）；第二阶段 16 组每组 600 步预计共 5～10 分钟（待用）；本地 CPU 验证约 3 分钟（教练，300 步预训练 + 3 组 200 步 SFT）；
 - API：无。
 
 ## Knowledge Changes

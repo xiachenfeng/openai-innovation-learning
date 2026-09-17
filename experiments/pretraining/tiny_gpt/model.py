@@ -142,7 +142,9 @@ class GPT(nn.Module):
             n -= self.wpe.weight.numel()  # wte 与 lm_head 共享，已只算一次
         return n
 
-    def forward(self, idx: torch.Tensor, targets: torch.Tensor | None = None):
+    def hidden(self, idx: torch.Tensor) -> torch.Tensor:
+        """token ids → 最后一层 LN 之后的隐状态 h，[B, T, d]。
+        E1 第二阶段（sft.py）用它：GPT-1 微调取的就是这个 h 的最后一个位置，再过新增的 W_y。"""
         B, T = idx.shape
         assert T <= self.cfg.block_size, f"T={T} 超过 block_size={self.cfg.block_size}"
         pos = torch.arange(0, T, device=idx.device)                 # [T]
@@ -151,7 +153,10 @@ class GPT(nn.Module):
         x = self.drop(x)
         for block in self.blocks:
             x = block(x)                                            # [B, T, d]，L 次
-        x = self.ln_f(x)
+        return self.ln_f(x)
+
+    def forward(self, idx: torch.Tensor, targets: torch.Tensor | None = None):
+        x = self.hidden(idx)                                        # [B, T, d]
         logits = self.lm_head(x)                                    # [B, T, V]
 
         loss = None
