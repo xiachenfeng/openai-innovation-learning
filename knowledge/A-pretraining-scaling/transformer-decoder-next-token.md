@@ -231,6 +231,11 @@ GPT-2 small，前缀 1000 token，生成第 1000 个 token 这一步：
 ```
 
   K、V 恰好是注意力（唯一跨 token 的步骤）需要从旧 token 那里拿的**全部**信息，所以它们是前缀的"充分统计量"：存下它们，旧 token 的其余一切都可以丢。也可以只缓存每层的 x 再临时投影，显存更小但每步多 2·d²·T_cur 的重投影；主流实现选择缓存 K、V。
+- **训练不需要 KV cache。** 训练时 T 个位置一次前向同时算完，每个位置的 K、V 在这一步算出并立刻被同一步的注意力用掉，没有"下一步再用"的需求。autograd 会把它们作为激活值保留到反向传播，但那是单步内的事，不跨步。cache 只在"逐 token 串行生成"时才有意义。例外是 RLHF / 推理 RL 的采样阶段（[[instructgpt-chatgpt]]、[[o1-rl-on-cot]]）：生成 rollout 时用 cache，随后的梯度更新不用。
+- **cache 的索引是"位置"，不是 token id。** 每层每 head 的 cache 是按序列位置 0 … T_cur−1 排列的一列 K、V。同一个 token（比如 "the"）出现在位置 3 和位置 50，K、V 完全不同，因为它们是过了 L 层注意力、混入了各自上下文之后的结果，位置信息也已经加在里面。
+- **多轮对话默认从第一句重新编码，prefix caching 用来避免。** 对话被序列化成一条长序列：system → user₁ → assistant₁ → user₂ → …。API 是无状态的，每个新请求原则上要把整段历史重新 prefill。但 causal 结构保证：位置 i 的 K、V 只依赖 token ≤ i，所以**只要前缀 token 序列逐位相同，它的 K、V 就逐位相同，可以复用**。实现上把 cache 按前缀分块存起来，用前缀 token 序列（的哈希）做 key，新请求命中多长前缀就跳过多长 prefill，只算新增的 suffix。任何一处改动（哪怕改一个字）会让从那一位开始的全部 cache 失效，所以 system prompt 要放最前、动态内容放最后。
+
+  公开边界：OpenAI API 的 prompt caching 是文档化的 Public system behavior（按前缀命中计费折扣；GPT-5.6 提供显式 cache breakpoint，见 [[function-calling-responses-api]]）；服务端如何存储、淘汰和跨机器共享 cache 未公开。
 - **LM head 的代价**：按每个生成 token 计是 d·V，与训练一样，没有省。省的是 prefill 阶段前 T_p − 1 个位置不用算（下一个 token 已知），以及避免朴素实现每步对整个前缀重算 logits 的 O(N²) 冗余。
 
 ## 6. Scaling 维度
