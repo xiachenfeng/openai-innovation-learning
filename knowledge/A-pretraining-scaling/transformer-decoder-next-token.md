@@ -222,6 +222,15 @@ GPT-2 small（L=12, d=768，bf16）：每 token 约 2×12×768×2 B ≈ 37 KB；
 ```
 
   这就是长上下文和多并发时显存的主要消耗，也是 [[codex-agent-loop-compaction]] 里 compaction 要压缩的对象。
+- **省的不是 K、V 那次投影，而是整个前缀的重新前向。** 一个 token 在一层算 K、V 只要 2·d² 次乘加，确实不大。但第 ℓ 层的 K、V 依赖该 token 在第 ℓ 层的输入 x，而 x 又依赖第 ℓ−1 层对全部 token 的注意力……一路追到底层。没有 cache，要得到旧 token 在每一层的 K、V，就得把旧 token 从 embedding 开始重跑全部 L 层 13 步，代价是每个旧 token 12·L·d²。于是第 n 步 decode 要付 n × 12·L·d²，N 步总量 O(N²)；有 cache 后每步只算新 token 那一份 12·L·d²，总量 O(N)。
+
+```text
+GPT-2 small，前缀 1000 token，生成第 1000 个 token 这一步：
+  无 cache：1000 × 85M ≈ 85G 次乘加
+  有 cache：     1 × 85M + 读 12 层 × 2 × 1000 × 768 ≈ 85M + 18M
+```
+
+  K、V 恰好是注意力（唯一跨 token 的步骤）需要从旧 token 那里拿的**全部**信息，所以它们是前缀的"充分统计量"：存下它们，旧 token 的其余一切都可以丢。也可以只缓存每层的 x 再临时投影，显存更小但每步多 2·d²·T_cur 的重投影；主流实现选择缓存 K、V。
 - **LM head 的代价**：按每个生成 token 计是 d·V，与训练一样，没有省。省的是 prefill 阶段前 T_p − 1 个位置不用算（下一个 token 已知），以及避免朴素实现每步对整个前缀重算 logits 的 O(N²) 冗余。
 
 ## 6. Scaling 维度
