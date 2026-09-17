@@ -1,6 +1,6 @@
 # OpenAI Innovation Algorithms Learning Project
 
-Last verified: 2026-08-01
+Last verified: 2026-09-13
 
 这是一个按时间线学习 OpenAI 从早期研究到最新公开创新的项目。
 
@@ -16,20 +16,14 @@ OpenAI 的许多前沿模型不会公开完整网络结构、训练数据和超�
 
 ## 主线
 
-- 生成式预训练与 GPT-1；
-- GPT-2 零样本能力；
-- Scaling Laws；
-- GPT-3 In-context Learning；
-- Human Feedback、WebGPT、InstructGPT、ChatGPT；
-- CLIP、DALL·E、Whisper、GPT-4、GPT-4o；
-- Process Supervision、o1、o3/o4；
-- Deliberative Alignment、CriticGPT、CoT Monitoring；
-- GPT-5 unified routing；
-- gpt-oss 公开 MoE 架构；
-- Codex Agent Loop、Context Compaction、Harness Engineering；
-- GPT-5.4/5.5/5.6 的长程 Agent、token efficiency 与 ultra multi-agent；
-- GPT-Red 自博弈安全；
-- GPT-Live full-duplex voice。
+课程按四条因果主线组织（见 `curriculum.md`），每周 3～4 小时，约 6 个月：
+
+- **Track A Pretraining & Scaling**：Sentiment Neuron → GPT-1 → GPT-2 → Scaling Laws → GPT-3
+- **Track B Alignment**：PPO / Human Preferences（2017）→ Learning to Summarize → InstructGPT → Scalable Oversight → Deliberative Alignment / GPT-Red
+- **Track C Reasoning**：Process Supervision → o1 → Test-time Compute → o3/o4 → GPT-5 Router
+- **Track D Agents & Systems**：Codex 2021 / WebGPT → Function Calling / Deep Research → Codex Agent Loop → gpt-oss → Multi-agent
+- **Track S Survey**（浅层）：CLIP、DALL·E、Whisper、GPT-4o、Sora、GPT-Live
+- **Track F Frontier**（每月滚动）：最新 system card 与发布，先进 candidates
 
 ## 最终能力
 

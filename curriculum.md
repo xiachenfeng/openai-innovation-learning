@@ -1,416 +1,302 @@
 # OpenAI Innovation Algorithms Curriculum
 
-Last verified: 2026-08-01
-
-## 总目标
-
-建立四条贯穿时间线：
-
-1. **Pretraining scaling**：GPT-1 → GPT-3；
-2. **Alignment scaling**：Human Feedback → InstructGPT → Deliberative Alignment；
-3. **Reasoning scaling**：Process supervision → o1/o3/o4 → GPT-5.x；
-4. **Agent and system scaling**：WebGPT/Codex → Deep Research → Codex harness → multi-agent ultra。
+Last verified: 2026-09-13
+Time budget: 每周 3～4 小时（1 次主 session 约 2 小时 + 1～1.5 小时实验或复习）
+Total: 22 个核心 session + 每月 1 次前沿滚动 session ≈ 6 个月
 
 ---
 
-# Phase 0：前置知识
+## 设计原则
 
-- Transformer
-- Autoregressive language modeling
-- Cross entropy
-- Fine-tuning
-- Prompting and in-context learning
-- PPO and reward models
-- Contrastive learning
-- Multimodal tokenization
-- Tool calling and agent loops
+1. **按四条因果主线组织，不按产品发布顺序。** 每条线内部按时间推进，每一节必须写清"承接的瓶颈"。
+2. **深度分级。** 四条主线目标 mastery 3；Survey 线目标 mastery 1～2；Frontier 线只做证据分类，不要求 mastery。
+3. **实验是完成标准，不是独立阶段。** 五个核心实验嵌在各节里，且前后复用同一套代码与模型。
+4. **图例优先，分工明确。** 每个核心机制至少一张图，教学用图由教练画。用户只负责每条主线结束时的"主线因果图"，默认用因果表（上一代 / 下一代 / 瓶颈）由教练转成图；复测用填空骨架。评分看内容不看语法。
+5. **前沿不写死。** Track F 的内容来自 `sources/source-status.md`，每月刷新，新内容先进 candidates。
 
 ---
 
-# Phase 1：生成式预训练的建立
+## 学习顺序
 
-## 1.1 Early Generative Models
+```mermaid
+flowchart LR
+  A[Track A<br/>Pretraining & Scaling<br/>5 周] --> B1[Track B 前半<br/>B1–B4<br/>4 周]
+  B1 --> C[Track C<br/>Reasoning<br/>5 周]
+  C --> B2[Track B 后半<br/>B5<br/>1 周]
+  B2 --> D[Track D<br/>Agents & Systems<br/>5 周]
+  D --> S[Track S<br/>Survey<br/>2 周]
+  F[Track F<br/>Frontier 滚动<br/>每月 1 次]
+```
 
-- Representation learning
-- Unsupervised feature discovery
-
-## 1.2 GPT-1
-
-- Generative pretraining
-- Supervised fine-tuning
-- Task-aware input transformations
-- Transfer learning
-
-完成标准：
-
-- 能解释为什么“先预训练再适配”改变 NLP；
-- 能写一个小型 pretrain/fine-tune 实验。
+Track B 拆成两半，因为 Deliberative Alignment、CoT Monitoring 和 GPT-Red 都建立在 reasoning model 之上，必须先学 Track C。
 
 ---
 
-# Phase 2：零样本、Scaling 与 In-context Learning
+# Track 0：前置知识（不占周数，在 A1 内完成诊断）
 
-## 2.1 GPT-2
+只包含真正的前置项，其余内容由各 Track 教：
 
-- Larger unsupervised LM
-- Zero-shot task behavior
-- Prompt conditioning
-- Staged release
+- Transformer decoder 结构（attention、MLP、residual、layernorm）
+- Autoregressive language modeling 与 cross entropy
+- 梯度下降与 fine-tuning 的基本概念
+- Python / PyTorch 能写训练循环
 
-## 2.2 Scaling Laws
-
-- Loss vs model/data/compute
-- Power-law fitting
-- Compute-efficient allocation
-- Predictability
-
-## 2.3 GPT-3
-
-- Few-shot / one-shot / zero-shot
-- No gradient updates at task time
-- Natural-language programming
-- Emergent capability and limitations
-
-完成标准：
-
-- 能比较 fine-tuning 与 in-context learning；
-- 能拟合简单 scaling law；
-- 能设计 few-shot 实验。
+诊断用统一的 8 项清单，见 `AGENTS.md` Initialization。
 
 ---
 
-# Phase 3：Human Feedback 与可用性
+# Track A：Pretraining & Scaling（5 周）
 
-## 3.1 Learning from Human Feedback
+主线问题：**如何在没有标注的情况下，用越来越大的模型学到可迁移的通用能力？**
 
-- Preference comparisons
-- Reward model
-- PPO
-- KL control
+## A1 Transformer decoder 与 next-token objective
 
-## 3.2 WebGPT
+- 承接瓶颈：RNN 难以并行、长程依赖弱；任务专用模型无法共享表征
+- 核心：decoder-only、causal mask、teacher forcing
+- 图：一张 decoder block 数据流图（tensor shape 标注）
+- 实验 E1 启动：写一个 tiny GPT（字符级或 BPE 小词表）
+- 非 OpenAI 依赖：Attention Is All You Need（2017）
 
-- Browser actions
-- Evidence and citations
-- RLHF for factual question answering
-- Tool-use precursor
+## A2 Sentiment Neuron → GPT-1
 
-## 3.3 InstructGPT
+- 承接瓶颈：无监督表征是否包含语义？（2017 sentiment neuron 给出正向证据）
+- 核心：generative pretraining + task-aware input transformation + supervised fine-tuning
+- 图：pretrain → fine-tune 的两阶段流程图，标出哪些参数共享
+- 实验 E1 完成：同一 tiny GPT 先预训练再 SFT，对比从零训练
 
-- SFT
-- Preference ranking
-- Reward model
-- PPO
-- Alignment tax and generalization
+## A3 GPT-2：zero-shot 与 prompt 即任务说明
 
-## 3.4 ChatGPT
+- 承接瓶颈：每个任务还要 fine-tune 一次
+- 核心：扩大无监督 LM，任务由文本条件隐式指定；staged release 的公开原因
+- 图：fine-tune 路径 vs prompt 路径对比图
+- 公开边界：GPT-2 完整权重与论文公开
 
-- Dialogue fine-tuning
-- Iterative deployment
-- Multi-turn behavior
+## A4 Scaling Laws 与其修正
 
-完成标准：
+- 承接瓶颈：怎样决定下一次训练该多大？
+- 核心：loss 对 N、D、C 的幂律；compute-efficient frontier
+- 对照（非 OpenAI）：Chinchilla（2022）修正 N 与 D 的最优分配比例
+- 延续：GPT-4 报告中的 predictable scaling（用小模型预测大模型 loss）
+- 图：loss–compute 双对数图 + Kaplan vs Chinchilla 分配示意
+- 实验 E2：用 E1 的代码训 3～4 个尺寸，拟合幂律
 
-- 画出 RLHF pipeline；
-- 实现 toy reward model；
-- 比较 base GPT 与 instruction model。
+## A5 GPT-3 与 In-context Learning
 
----
+- 承接瓶颈：zero-shot 不稳定，few-shot 需要梯度更新
+- 核心：任务示例放进上下文、无梯度更新；zero/one/few-shot 的差异；能力与局限
+- 图：ICL 与 fine-tune 在"参数是否变化"和"信息进入路径"上的对比
+- 实验 E3：用 E1 的模型或 GPT-2 small 做 zero/few-shot 探针
 
-# Phase 4：Multimodal Foundation Models
+**Track A 完成标准**
 
-## 4.1 CLIP
-
-- Contrastive language-image pretraining
-- Natural-language supervision
-- Zero-shot classification
-
-## 4.2 DALL·E and Image Generation
-
-- Text-conditioned image generation
-- Prompt expansion and controllability
-- Diffusion/autoregressive evolution按官方公开资料学习
-
-## 4.3 Whisper
-
-- Weak supervision at scale
-- Multilingual speech recognition
-- Robust transfer
-
-## 4.4 GPT-4 and GPT-4o
-
-- Large multimodal model
-- Image + text reasoning
-- GPT-4o real-time audio/vision/text
-- Native multimodal interaction
-
-## 4.5 Sora and World Simulation
-
-- Video generation
-- Space-time patches
-- Scaling video models
-- World-simulator hypothesis
-
-完成标准：
-
-- 能比较 contrastive、generative 和 omni-modal paradigms；
-- 区分公开机制与未公开 GPT-4 internals。
+- 用因果表写出 A1～A5 的链条，每一步说明解决了上一步的什么瓶颈；教练转成图写入 MOC
+- E1、E2、E3 完成，且 E2 的拟合结果能解释 Chinchilla 为何修正 Kaplan
+- 能说清 GPT-3 论文公开了什么、没公开什么
 
 ---
 
-# Phase 5：监督推理过程
+# Track B：Alignment（4 周 + 1 周）
 
-## 5.1 Outcome vs Process Supervision
+主线问题：**一个只会续写的模型，如何变成按人的意图行事的模型？**
 
-- Final-answer reward
-- Step-level reward
-- Process reward models
-- Alignment benefits and costs
+## B1 PPO 与 Learning from Human Preferences（2017）
 
-## 5.2 Critic Models
+- 承接瓶颈：许多任务没有可编程的 reward
+- 核心：从成对比较学 reward model（Bradley–Terry）；PPO 的 clipped objective
+- 图：preference → RM → policy 的闭环图；PPO clip 的示意图
+- 注意：这两篇都是 OpenAI 2017 年论文，是整条线的起点，不是 2020
 
-- CriticGPT
-- AI-assisted human supervision
-- Bug insertion and critique
-- Scalable oversight
+## B2 Learning to Summarize（2020）
 
-## 5.3 Prover-Verifier Games
+- 承接瓶颈：把 RLHF 用在语言模型上会不会 reward hacking？
+- 核心：RM + PPO + KL penalty；RM 过优化现象
+- 图：带 KL 项的 RLHF 训练循环
+- 实验 E4 启动：toy reward model（用小型 pretrained LM）
 
-- Legibility
-- Verification
-- Generator-verifier dynamics
+## B3 InstructGPT 与 ChatGPT
 
-完成标准：
+- 承接瓶颈：GPT-3 不听指令，输出有害或不实
+- 核心：SFT → RM → PPO 三阶段；alignment tax；对未见指令的泛化
+- ChatGPT：对话数据 + 迭代部署，算法上是 InstructGPT 的延续
+- 对照（非 OpenAI）：DPO 用闭式解跳过显式 RM，理解它有助于分清"偏好优化"与"PPO"
+- 图：InstructGPT 三阶段图，标注每阶段的数据来源和参数更新对象
+- 实验 E4 完成：RM + 一轮简化策略优化，观察 KL 与 reward 的权衡
 
-- 实现 toy process reward；
-- 设计 critic-assisted evaluation；
-- 比较 outcome/process supervision。
+## B4 Scalable Oversight
 
----
+- 承接瓶颈：模型能力超过标注者时，人怎么继续监督？
+- 核心：CriticGPT（用模型找错）、Prover–Verifier Games（可验证性训练）、Weak-to-strong generalization
+- 图：oversight 三种方案的对比图
+- 公开边界：这些是研究论文，未说明在生产模型中的具体使用方式
 
-# Phase 6：Reasoning Models
+## B5 Reasoning 时代的对齐（在 Track C 之后学）
 
-## 6.1 o1
+- 承接瓶颈：有了 chain-of-thought 后，安全训练能否利用推理？隐藏推理能否被监控？
+- 核心：Deliberative Alignment（把 spec 当训练材料）、Model Spec、Instruction Hierarchy、CoT Monitoring、GPT-Red（自博弈红队）
+- 图：spec → reasoning → behavior 的映射图；attacker/defender 自博弈循环图
+- 公开边界：GPT-Red 有论文；其在生产训练中的精确接入方式为 Public system behavior
+- 可选实验 E8：只在无害文本分类环境中做 attacker/defender toy 自博弈
 
-- Large-scale RL on chain of thought
-- Train-time RL scaling
-- Test-time compute scaling
-- Productive reasoning traces
-- Limitations and hidden CoT
+**Track B 完成标准**
 
-## 6.2 Deliberative Alignment
-
-- Safety specification as training material
-- Reasoning over policies
-- Generalization and robustness
-
-## 6.3 o3 and o4-mini
-
-- Stronger reasoning
-- Tool-integrated reasoning
-- Visual reasoning in chain of thought
-- Python and web tools
-
-完成标准：
-
-- 区分 pretraining compute、RL compute、test-time compute；
-- 设计 pass@k / budget scaling 实验；
-- 解释为什么公开“机制”不等于公开全部算法。
+- 用因果表写出 2017 → 2020 → 2022 → 2024 的 alignment 链条；教练转成图写入 MOC
+- E4 完成，能解释 KL penalty 在做什么
+- 能区分 RLHF、DPO、deliberative alignment 三者改变的是训练流程的哪一环
 
 ---
 
-# Phase 7：Unified Models and Open Weights
+# Track C：Reasoning（5 周）
 
-## 7.1 GPT-5 Unified System
+主线问题：**如何让模型在推理时花更多计算换更高正确率，并把这种行为训练出来？**
 
-- Fast model
-- Deeper reasoning model
-- Real-time router
-- Minimal reasoning
-- Parallel test-time compute
-- Safe-completions
+## C1 Outcome vs Process Supervision
 
-## 7.2 gpt-oss
+- 承接瓶颈：只奖励最终答案会奖励错误过程
+- 核心：step-level reward、PRM vs ORM；PRM800K 数据集公开
+- 图：ORM 与 PRM 的 reward 信号落点对比图
+- 实验 E5 启动：在 GSM8K 子集上比较 ORM 与 PRM 的重排效果
 
-- MoE Transformer
-- Total vs active parameters
-- Alternating dense and locally banded sparse attention
-- Grouped multi-query attention
-- SFT + high-compute RL
-- Tool use and reasoning
+## C2 o1：RL on Chain-of-Thought
 
-完成标准：
+- 承接瓶颈：prompt 出来的 CoT 不稳定，且不随训练变强
+- 核心：大规模 RL 训练推理链；train-time RL compute 与 test-time compute 两条 scaling 曲线；隐藏 CoT 的官方理由
+- 图：两条 scaling 曲线图；o1 与 InstructGPT 训练流程的差异图
+- 公开边界：o1 的训练数据、RL 算法细节、reward 设计均未公开，只公开曲线与行为
 
-- 实现一个 fast/reasoning router；
-- 分析 gpt-oss 公开架构；
-- 区分 ChatGPT system routing 与 API model access。
+## C3 Test-time Compute 的公开机制
 
----
+- 承接瓶颈：怎样把"多想一会儿"变成可控参数？
+- 核心：pass@k、majority vote、verifier reranking；API 的 reasoning effort 参数（none → max）是 Public system behavior；GPT-5.6 system card 的 effort–performance 曲线
+- 图：budget → accuracy 曲线，标注不同采样策略
+- 实验 E5 完成：同一题集上跑 pass@k 与 verifier 重排，画出 budget 曲线
 
-# Phase 8：Agentic Systems
+## C4 o3 / o4-mini：Tool-integrated Reasoning
 
-## 8.1 From WebGPT to Deep Research
+- 承接瓶颈：纯文本推理无法执行、无法查证
+- 核心：在推理链中调用 Python、搜索、图像操作；视觉推理进入 CoT
+- 图：带 tool call 的推理链时序图
+- 公开边界：工具调用在推理中的训练方式未公开
 
-- Search
-- Browsing
-- Citation
-- Multi-step synthesis
-- Long-running research
+## C5 GPT-5 Unified System 与 effort 控制
 
-## 8.2 Codex
+- 承接瓶颈：用户不该自己选模型
+- 核心：fast model + reasoning model + real-time router；minimal reasoning；parallel test-time compute；safe-completions
+- 延续：GPT-5.6 的 max effort、Sol/Terra/Luna 分层
+- 图：ChatGPT router 系统图，区分 ChatGPT 系统路由与 API 直接访问
+- 可选实验 E7：写一个 fast/reasoning router 并测量成本与正确率权衡
 
-- Sandbox
-- Repository context
-- Tool loop
-- Test-and-iterate
-- RL on real-world coding tasks
+**Track C 完成标准**
 
-## 8.3 Agent Loop and Harness
-
-- Prompt construction
-- Tools
-- Responses API
-- Context management
-- Sandboxing
-- Compaction
-- Verification
-
-## 8.4 Orchestration
-
-- Subagents
-- Parallel workstreams
-- Symphony-style orchestration
-- Human review control plane
-- Harness engineering
-
-完成标准：
-
-- 实现最小 agent loop；
-- 实现 context compaction；
-- 设计单 Agent 与多 Agent 对比实验。
+- 用因果表写出 process supervision → o1 → o3 → GPT-5 的链条；教练转成图写入 MOC
+- E5 完成，能解释为什么 PRM 在 budget 增大时优势更明显（或不明显）
+- 能分清 pretraining compute、RL compute、test-time compute 三者
 
 ---
 
-# Phase 9：GPT-5.4 → GPT-5.6 当前创新
+# Track D：Agents & Systems（5 周）
 
-## 9.1 Long-horizon Capability
+主线问题：**模型如何在环境里多步行动，系统如何让这种行动可靠？**
 
-- Professional work
-- Agentic coding
-- Computer use
-- Long context
-- Tool coordination
+## D1 Codex（2021）与 WebGPT
 
-## 9.2 Efficiency
+- 承接瓶颈：语言模型不会执行动作，也不会引用证据
+- 核心：Codex 2021 论文（代码 fine-tune + pass@k 评估）；WebGPT 的浏览器动作空间与引用 RLHF
+- 注意：Codex 2021（模型）与 Codex 2025（agent 产品）同名不同物
+- 图：WebGPT 的 observation → action → reward 循环图
 
-- More task success per token
-- Load balancing
-- Speculative decoding
-- Caching
-- Kernel optimization
-- Workload-specific tuning
+## D2 Function Calling、Responses API 与 Deep Research
 
-## 9.3 GPT-5.6 ultra
+- 承接瓶颈：工具调用需要结构化接口，长任务需要多步合成
+- 核心：function calling / structured outputs 作为 Public system behavior；Deep Research 的搜索–阅读–合成流程
+- 图：单次 tool call 的消息格式序列图
+- 公开边界：Deep Research 的训练方式只有概述
 
-- Multiple agents
-- Parallel workstreams
-- Maximum capability setting
-- Coordination overhead
-- Verification and merging
+## D3 Codex（2025）Agent Loop、Compaction 与 Harness
 
-## 9.4 Public Boundary
+- 承接瓶颈：长任务会撑爆上下文，且动作有副作用
+- 核心：Unrolling the Codex agent loop；sandbox；context compaction；App Server 与 harness engineering
+- 图：agent loop 状态机图；compaction 前后上下文结构图
+- 实验 E6：最小 agent loop + compaction，测量长任务下的 token 与成功率
 
-- Officially disclosed behavior and systems
-- Undisclosed base network architecture
-- Evaluation evidence vs causal claims
+## D4 gpt-oss：唯一可深读的开放架构
 
-完成标准：
+- 承接瓶颈：其他 OpenAI 模型架构不公开，需要一个可审计的锚点
+- 核心：MoE、total vs active 参数、交替 dense/banded sparse attention、GQA、SFT + high-compute RL
+- 图：gpt-oss 一层的结构图，标注 expert routing
+- 可选实验 E9：加载 gpt-oss-20b 权重做架构分析（需 ≥16 GB 内存，可只读 config 不推理）
 
-- 能解释 GPT-5.6 的公开创新重点；
-- 不猜测未公开架构；
-- 设计 token-efficiency 与 multi-agent 实验。
+## D5 Multi-agent 与 Orchestration
 
----
+- 承接瓶颈：单 agent 串行，且难以人工审查
+- 核心：subagents、Symphony（issue tracker 作为控制平面）、GPT-5.6 ultra 的并行 workstream；协调开销与合并验证
+- 图：单 agent vs 并行 subagents 的时序对比图
+- 可选实验 E7 扩展：单 agent 与 2～3 个 subagent 在可拆分任务上的质量/成本/时延比较
 
-# Phase 10：Safety and Self-improvement
+**Track D 完成标准**
 
-## 10.1 CoT Monitoring
-
-- Detect reward hacking
-- Monitorability
-- Risks of directly optimizing hidden reasoning
-
-## 10.2 Confessions and Instruction Hierarchy
-
-- Behavioral transparency
-- Layered safeguards
-- Prompt-injection defense
-
-## 10.3 GPT-Red
-
-- Self-play RL
-- Attacker/defender population
-- Adversarial training
-- Prompt-injection robustness
-
-## 10.4 Model Spec
-
-- Explicit behavioral specification
-- Deliberative alignment
-- Limits of specification-to-behavior mapping
-
-完成标准：
-
-- 解释 safety training 与 capability training 的耦合；
-- 实现安全的 toy attacker/defender simulation，只用于无害文本分类环境；
-- 评价 self-play 的覆盖与过拟合问题。
+- 用因果表写出 Codex 2021 → WebGPT → Codex 2025 → multi-agent 的链条；教练转成图写入 MOC
+- E6 完成，能说清 compaction 丢了什么、保留了什么
+- 能分析 gpt-oss 公开架构，并说明它不能推断闭源模型架构
 
 ---
 
-# Phase 11：Voice and Full-duplex Interaction
+# Track S：Survey（2 周，目标 mastery 1～2）
 
-## GPT-Live
+只要求能识别时间、术语和范式差异，不做实验。
 
-- Cascaded vs end-to-end voice
-- Turn-based vs full-duplex
-- Simultaneous listening and speaking
-- Delegation to frontier model
-- Latency, interruption and orchestration
+## S1 Multimodal
 
-完成标准：
+- CLIP（对比学习、自然语言监督、zero-shot 分类）
+- DALL·E 系列（文本条件生成；自回归 → 扩散）
+- Whisper（大规模弱监督语音）
+- GPT-4 / GPT-4o（多模态 frontier model；omni 实时交互）
+- Sora（space-time patches；world simulator 假说）
+- 图：contrastive / generative / omni 三种范式的一张对比图
 
-- 画出三代 voice architecture；
-- 分析 full-duplex 对 streaming、state 和 scheduling 的要求。
+## S2 Voice 与 Full-duplex
 
----
-
-# Phase 12：实验
-
-- `experiments/pretraining/`
-- `experiments/scaling-laws/`
-- `experiments/in-context-learning/`
-- `experiments/rlhf/`
-- `experiments/process-supervision/`
-- `experiments/reasoning-scaling/`
-- `experiments/gpt-oss/`
-- `experiments/agent-loop/`
-- `experiments/router/`
-- `experiments/multi-agent/`
-- `experiments/safety-self-play/`
+- GPT-Live：cascaded → turn-based end-to-end → full-duplex 三代架构
+- 边听边说、委托 frontier model、打断与调度
+- 图：三代 voice 架构图
 
 ---
 
-# Phase 13：毕业项目
+# Track F：Frontier 滚动（每月 1 次 session）
 
-最终交付：
+流程固定，内容从 `sources/source-status.md` 读取：
 
-1. OpenAI 技术时间线；
-2. GPT pretraining 与 scaling 知识卡；
-3. RLHF 与 InstructGPT 知识卡；
-4. Process supervision 与 reasoning scaling 知识卡；
-5. Multimodal 演进知识卡；
-6. GPT-5 router 与 gpt-oss 架构知识卡；
-7. Agent loop、compaction 与 multi-agent 知识卡；
-8. Safety/self-play 知识卡；
-9. 至少五个 toy experiments；
-10. `final-report.md`。
+1. 只搜 OpenAI 官方域名，找上月之后的新模型、system card、研究文章
+2. 对每条新内容做四分类：Public algorithm / Public system behavior / Inference / Unknown
+3. 写入 `knowledge/F-frontier/`（`status: candidate`）
+4. 判断是否影响四条主线的因果链；影响则提议修改课程，不直接改
+5. 更新 `sources/source-status.md` 与 `timeline.md`
+
+当前待处理：GPT-6 Astra（2026-08 之后发布，尚未纳入任何主线），见 `knowledge/F-frontier/gpt-6-astra.md`。
+
+---
+
+# 实验总表
+
+| 编号 | 名称 | 挂在 | 复用 | 必做 |
+|---|---|---|---|---|
+| E1 | tiny GPT pretrain + SFT | A1–A2 | 起点 | 是 |
+| E2 | scaling-law 拟合 | A4 | E1 代码 | 是 |
+| E3 | in-context learning 探针 | A5 | E1 模型 | 是 |
+| E4 | reward model + 策略优化 | B2–B3 | 小型 pretrained LM | 是 |
+| E5 | ORM vs PRM + pass@k | C1, C3 | 同一题集 | 是 |
+| E6 | agent loop + compaction | D3 | 起点 | 是 |
+| E7 | fast/reasoning router 与 multi-agent 比较 | C5, D5 | E6 | 可选 |
+| E8 | 无害环境 attacker/defender 自博弈 | B5 | E4 | 可选 |
+| E9 | gpt-oss 架构分析 | D4 | 无 | 可选 |
+
+算力假设：E1～E3 在单机 CPU/MPS 可跑（模型 ≤10M 参数）；E4～E7 需要 API 调用，预算每月控制在合理范围内并在 experiment 记录里写明花费。
+
+---
+
+# 毕业交付
+
+1. 四张主线因果图（A、B、C、D 各一张，来自你的因果表，存于各 MOC 的"我的版本"，复测时能在骨架上重新填出）
+2. 六个必做实验的记录（E1～E6）
+3. 每条主线至少 3 张 canonical 知识卡
+4. Track S 两张范式对比图
+5. `final-report.md`：按四条主线写"瓶颈 → 创新 → 机制 → 影响 → 公开边界"，附证据清单
