@@ -159,7 +159,7 @@ class GPT(nn.Module):
             # TODO(you) (2): 对 T 个位置同时算交叉熵取平均（作业第 4 题的批量版）。
             #   提示：F.cross_entropy 接受 [N, V] 的 logits 和 [N] 的 targets，
             #   所以要先把 [B, T, V] 摊成 [B*T, V]，targets 摊成 【】[B*T]。
-            loss = F.cross_entropy(logits.reshape(-1, x.size(-1)), targets.reshape(-1))  # ← 替换这一行
+            loss = F.cross_entropy(logits.reshape(-1, logits.size(-1)), targets.reshape(-1))  # ← 替换这一行
         return logits, loss
 
     @torch.no_grad()
