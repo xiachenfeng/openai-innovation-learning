@@ -3,7 +3,7 @@
 - Name: E1 tiny GPT（字符级 decoder-only 语言模型）
 - Date: 2026-09-16 启动
 - Related concept: [[transformer-decoder-next-token]]（A1）、[[sentiment-neuron-gpt-1]]（A2，第二阶段）
-- Status: 骨架已写，教练参考解在本地 CPU 验证通过；待用户填空后在 4090 上跑 smoke test
+- Status: 第一阶段完成（2026-09-17，用户填空 + 4090 smoke 通过）；第二阶段（pretrain → SFT vs from-scratch）待 A2
 
 ## Question
 
@@ -60,13 +60,27 @@ smoke test passed
 
 100 步训练（batch 16）：step 50 val 2.849，step 100 val 2.645，4 秒。采样文本已有英文词形但无意义，符合预期。
 
-### 用户 4090 运行
+### 用户 4090 运行（2026-09-17）
 
-待填：粘贴 smoke 输出。
+用户自行填了 causal mask 与交叉熵两处空。过程中两次出错并自行修正：`cross_enrtopy` 拼写；`logits.reshape(-1, x.size(-1))` 用了隐状态维 d 而非词表维 V，改为 `logits.size(-1)`。
+
+```text
+device: cuda
+text chars: 1,115,394  vocab: 65  train tokens: 1,003,854
+params (non-embedding): 801,664   12·L·d² ≈ 786,432
+x: (64, 128)  y: (64, 128)
+logits: (64, 128, 65)  loss: 4.2245   (随机初始化时应接近 ln V = 4.1744)
+backward ok, grad norm: 4.2311
+smoke test passed
+```
+
+与 CPU 参考解结果一致（loss 4.22 vs 4.23，差异来自随机初始化与 batch 采样）。
 
 ## Interpretation
 
-待填。
+- 初始 loss 4.22 ≈ ln 65 = 4.17：随机初始化下 LM head 对 65 个字符打分近似均匀，交叉熵等于均匀分布的熵。略高于 ln V 是因为随机 logits 并非严格相等，softmax 稍有偏离均匀，损失只会更大；
+- 非 embedding 参数 801,664 与 12·L·d² = 786,432 的差是 LayerNorm 与 bias（约 15k），推导公式成立；
+- 用户第二次错误（用 d 而非 V 摊平 logits）恰好对应知识卡追问 7 的混淆点：隐状态维 d 与词表维 V 是两个不同的轴。
 
 ## Limitations
 
@@ -75,12 +89,12 @@ smoke test passed
 
 ## Cost
 
-- 算力：4090 单卡，smoke < 1 分钟；2000 步预计 2～5 分钟；
+- 算力：4090 单卡，smoke < 1 分钟（已用）；2000 步预计 2～5 分钟（待用）；本地 CPU 验证约 1 分钟；
 - API：无。
 
 ## Knowledge Changes
 
-待 smoke 通过后在 [[transformer-decoder-next-token]] 的"掌握证据"里记录。
+[[transformer-decoder-next-token]] "掌握证据"记录 E1 第一阶段完成；mastery 保持 1（升 2 需要复测时 mechanism ≥ 3）。
 
 ## Next Experiment
 

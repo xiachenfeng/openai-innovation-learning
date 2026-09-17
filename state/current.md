@@ -1,6 +1,6 @@
 # Current Learning State
 
-Last updated: 2026-09-16（A1 讲解与作业完成，E1 骨架待用户运行）
+Last updated: 2026-09-17（A1 完成，E1 第一阶段 smoke 通过）
 
 ## Long-term Goal
 
@@ -27,11 +27,12 @@ A1 Transformer decoder 与 next-token objective。诊断结论：A 线能识别�
 2026-09-13：完成课程设计评审与重构（见 sessions/2026-09-13-course-redesign.md）。
 2026-09-13：完成 8 题前置诊断，进入 A1。
 2026-09-15～16：A1 讲解、六个追问写入知识卡；作业 3/5 对，softmax 重做通过；E1 骨架写好并在本地 CPU 验证参考解。
+2026-09-17：追问 7、8（logits vs 注意力分数、大词表 LM head）写入知识卡；用户填空并在 4090 跑通 E1 smoke。
 
 ## Active Experiment
 
-E1 tiny GPT：骨架在 experiments/pretraining/tiny_gpt/，用户需填两处空并在 4090 跑 `python train.py --smoke`。
+E1 tiny GPT：第一阶段完成（4090 smoke 通过）。第二阶段（pretrain → SFT vs from-scratch）随 A2 进行。
 
 ## Next Recommended Action
 
-1. 填 E1 两处空，跑 smoke，粘贴输出；2. 进入 A2 Sentiment Neuron → GPT-1；3. 09-23 复测 A1。
+1. 进入 A2 Sentiment Neuron → GPT-1，E1 加 SFT 阶段；2. 09-23 复测 A1 block 结构；3. 可选：先跑 `python train.py --steps 2000` 看采样效果。

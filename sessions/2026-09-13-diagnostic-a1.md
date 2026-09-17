@@ -1,6 +1,6 @@
 # Learning Session
 
-- Date: 2026-09-13（讨论延续至 09-15、09-16）
+- Date: 2026-09-13（讨论延续至 09-15、09-16、09-17）
 - Topic: 前置诊断（8 题）+ A1 Transformer decoder 与 next-token objective
 - Phase: Track A · A1
 - Duration: 约 3 个 40 分钟块（诊断 / A1 讲解与追问 / 作业与 E1）
@@ -40,7 +40,9 @@
 3. head 切分 vs token mixer（MLP-Mixer、MetaFormer，非 OpenAI 对照）；
 4. 一个 head 的 Q、K 只在本 head 内打分，W_O 才混合；
 5. W_O "混合 head"的含义；
-6. 为什么需要逐 token 的非线性 MLP。
+6. 为什么需要逐 token 的非线性 MLP；
+7. 注意力分数 vs logits（09-17）；
+8. 大词表下 LM head 的点积、分母计算、显存与算力占比、prefill/decode 的代价（09-17）。
 
 用户自己总结出"沿 token 维搬运 / 逐 token 非线性加工"的物理图景，已记入卡片并链接到 A4、D3、D4。
 
@@ -50,7 +52,7 @@
 
 ## 实验
 
-E1 骨架写入 `experiments/pretraining/tiny_gpt/`，两处填空（causal mask、交叉熵）。教练参考解在本地 CPU 验证：smoke 通过，初始 loss 4.23 ≈ ln 65；100 步 val 2.64。待用户在 4090 上跑。
+E1 骨架写入 `experiments/pretraining/tiny_gpt/`，两处填空（causal mask、交叉熵）。教练参考解在本地 CPU 验证：smoke 通过，初始 loss 4.23 ≈ ln 65；100 步 val 2.64。09-17 用户自行填空（两次出错自行修正：拼写、d/V 轴混淆），4090 smoke 通过，loss 4.22。E1 第一阶段完成。
 
 ## Files Updated
 
@@ -65,6 +67,6 @@ E1 骨架写入 `experiments/pretraining/tiny_gpt/`，两处填空（causal mask
 
 ## Next Step
 
-1. 用户填 model.py 两处空并在 4090 跑 smoke，粘贴输出；
-2. 下一块：A2 Sentiment Neuron → GPT-1，E1 加 SFT 阶段；
+1. 下一块：A2 Sentiment Neuron → GPT-1，E1 加 SFT 阶段；
+2. 可选：先跑 2000 步看采样；
 3. 2026-09-23 前后复测 A1 block 结构（review queue）。

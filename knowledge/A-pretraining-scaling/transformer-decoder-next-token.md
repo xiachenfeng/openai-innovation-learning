@@ -448,7 +448,9 @@ GPT-1 代入公式：12 × 12 × 768² ≈ 85M，加上 40478 × 768 ≈ 31M 的
 
 - 2026-09-13 诊断 correctness 2 → mastery 1。
 - 2026-09-16 作业 correctness 2、algorithmic_mechanism 2 → mastery 保持 1；causal mask、softmax 权重、"一次前向 T 个预测"已掌握，softmax 数值与 target 对齐待重做。
-- 待完成：softmax + CE 重做；E1 骨架跑通一次前向与反向。
+- 2026-09-16 softmax + CE 重做通过。
+- 2026-09-17 E1 第一阶段：自行填 causal mask 与交叉熵，4090 smoke 通过（初始 loss 4.22 ≈ ln 65）。中途把 logits 用 d 而非 V 摊平，对应追问 7 的 d/V 轴混淆，已自行修正。
+- 待完成：09-23 复测 block 结构（第二档填空）；E1 第二阶段随 A2。
 
 ## 待验证内容
 
