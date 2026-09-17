@@ -209,6 +209,15 @@ $$
 | decode（每生成 1 个 token） | 1 个位置 + 读 KV cache | 1 个位置 |
 
 - **KV cache**：逐 token 的步骤对新 token 只算一次；跨 token 的步骤要用新 token 的 Q 乘所有旧 token 的 K、V，旧 token 的 K、V 不变，缓存起来即可。
+- **cache 在 decode 阶段持续增长，不只在 prefill 生成。** prefill 一次写入 T_p 个位置；之后每生成一个 token，它在每一层都要过步 2 算出自己的 K、V（步 3 切 head 后各 [h, 1, d_k]），追加到该层的 cache 末尾，然后用自己的 Q 对 cache 里全部 T_p + n 个 K 打分。所以第 n 步 decode 的 cache 长度是 T_p + n。Q 不缓存，因为它只在本步用一次。
+
+```text
+每层 cache：K [B, h, T_cur, d_k]，V [B, h, T_cur, d_k]，T_cur = T_p + 已生成数
+总大小 ≈ 2 × L × T_cur × d × 每元素字节数（每条序列）
+GPT-2 small（L=12, d=768，bf16）：每 token 约 2×12×768×2 B ≈ 37 KB；T_cur = 4k 时约 150 MB
+```
+
+  这就是长上下文和多并发时显存的主要消耗，也是 [[codex-agent-loop-compaction]] 里 compaction 要压缩的对象。
 - **LM head 的代价**：按每个生成 token 计是 d·V，与训练一样，没有省。省的是 prefill 阶段前 T_p − 1 个位置不用算（下一个 token 已知），以及避免朴素实现每步对整个前缀重算 logits 的 O(N²) 冗余。
 
 ## 6. Scaling 维度
