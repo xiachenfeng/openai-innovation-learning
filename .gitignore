@@ -3,8 +3,8 @@ __pycache__/
 *.pyc
 .env
 .venv/
-outputs/*
-!outputs/*.csv
+**/outputs/*
+!**/outputs/*.csv
 cache/
 *.tmp
 .obsidian/
