@@ -15,3 +15,14 @@
 | E9 | gpt-oss/ | D4 | 无 | 可选 | 架构参数表与一层结构图 |
 
 每个实验用 `templates/experiment.md` 记录，写明算力与 API 花费。
+
+## 云主机工作流
+
+代码只在云主机上编辑和运行，GitHub 做中转：
+
+1. 云主机开工先 `git pull`；
+2. 编辑、运行；
+3. `bash experiments/sync.sh "E1: 做了什么"` 提交并推送 `experiments/` 下的改动（含 `outputs/*.csv`，不含 `*.pt` 与缓存）；
+4. 教练每次 session 开始自动 `git pull`。
+
+推送权限用仓库的 Deploy key（Settings → Deploy keys，勾 Allow write access），云主机退租时删掉即可。
