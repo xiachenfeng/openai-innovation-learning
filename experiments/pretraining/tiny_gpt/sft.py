@@ -82,7 +82,12 @@ def encode_example(text: str, stoi: dict, S: int, E: int) -> list[int]:
             语料里没见过的字符用 stoi[" "] 兜底：stoi.get(c, stoi[" "])。
       知识卡 A2 §2.3 的第一行就是这个拼法。
     """
-    raise NotImplementedError("TODO(you) (1)")
+    #result = []
+    #result.append(S)
+    #result.extend([i in dict ? stoi[i] ? stoi[" "] for i in text])
+    #result.append(E)
+    return [S, *[stoi.get(i, stoi[" "]) for i in text], E]
+
 
 
 def collate(batch, stoi, S, E, device):
@@ -120,7 +125,7 @@ class GPTClassifier(nn.Module):
         # TODO(you) (2): 取每个样本 <e> 位置的隐状态，得到 h_e，形状 [B, d]。
         #   提示：e_pos 是 [B] 的位置下标；h[torch.arange(B), e_pos] 就是"第 i 个样本取第 e_pos[i] 个位置"。
         #   为什么取 <e> 而不是 <s>：见知识卡 A2 §2.3 末尾（causal mask）。
-        h_e = None  # ← 替换这一行
+        h_e = h[torch.arange(B), e_pos] # ← 替换这一行
         if h_e is None:
             raise NotImplementedError("TODO(you) (2)")
 
@@ -137,7 +142,7 @@ class GPTClassifier(nn.Module):
             )
 
         # TODO(you) (3): 总损失 L3 = L2 + λ·L1（知识卡 A2 §3 第三个公式）。
-        loss = None  # ← 替换这一行
+        loss = loss_cls + lam*loss_lm# ← 替换这一行
         if loss is None:
             raise NotImplementedError("TODO(you) (3)")
         return logits, loss, loss_cls, loss_lm
