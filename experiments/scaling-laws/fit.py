@@ -31,7 +31,8 @@ def fit_alpha(N_sub, L_sub):
     """在双对数坐标下做一次线性回归，返回 (alpha, intercept)。"""
     # TODO(you) (1): 用 np.polyfit 对 log N 与 log L 拟合一次多项式，斜率 s，截距 b；alpha = -s。
     #   提示：np.polyfit(x, y, 1) 返回 [斜率, 截距]。
-    return np.polyfit(np.log(N_sub), np.log(L_sub), 1)
+    s, b = np.polyfit(np.log(N_sub), np.log(L_sub), 1)
+    return -s, b
 
 
 def predict(alpha, b, N_query):
