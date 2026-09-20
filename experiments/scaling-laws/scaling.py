@@ -33,13 +33,13 @@ def kaplan_params(model: GPT) -> int:
     # TODO(you) (1): 从 total 里减去两个 embedding 矩阵的元素数。
     #   提示：model.wte.weight.numel() 与 model.wpe.weight.numel()。
     #   结果应接近 12·L·d² 加上 LayerNorm 与 bias（每层 13·d，最后再加一个 LN 的 2d）。
-    raise NotImplementedError("TODO(you) (1)")  # ← 替换这一行，形如 return total - ... - ...
+    return total - model.wte.weight.numel() - model.wpe.weight.numel()
 
 
 def flops_estimate(n_params: int, tokens: int) -> float:
     """Kaplan 2020 的算力估计 C ≈ 6·N·D（前向 2N/token，反向 4N/token）。"""
     # TODO(you) (2): 一行。
-    raise NotImplementedError("TODO(you) (2)")  # ← 替换这一行
+    return 6*n_params*tokens
 
 
 def main():

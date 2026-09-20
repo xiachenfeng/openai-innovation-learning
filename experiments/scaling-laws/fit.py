@@ -31,13 +31,13 @@ def fit_alpha(N_sub, L_sub):
     """在双对数坐标下做一次线性回归，返回 (alpha, intercept)。"""
     # TODO(you) (1): 用 np.polyfit 对 log N 与 log L 拟合一次多项式，斜率 s，截距 b；alpha = -s。
     #   提示：np.polyfit(x, y, 1) 返回 [斜率, 截距]。
-    raise NotImplementedError("TODO(you) (1)")  # ← 替换这一行，返回 (alpha, b)
+    return np.polyfit(np.log(N_sub), np.log(L_sub), 1)
 
 
 def predict(alpha, b, N_query):
     """用拟合结果预测 N_query 处的 loss。"""
     # TODO(you) (2): log L = b − alpha·log N，返回 L（不是 log L）。
-    raise NotImplementedError("TODO(you) (2)")  # ← 替换这一行
+    return np.exp(b - alpha*np.log(N_query))
 
 
 alpha_all, b_all = fit_alpha(N, L)
