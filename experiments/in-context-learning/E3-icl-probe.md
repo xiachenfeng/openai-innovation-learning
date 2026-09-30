@@ -86,6 +86,10 @@ bash ../sync.sh "E3: 填空并跑四个尺寸"
 
 （待填：结果写入 [[gpt-3-in-context-learning]] 的"最小示例或实验"段）
 
+## 可选扩展（2026-10-01 追问引出）
+
+示例标签随机打乱的 K = 8 对照（Min 等 2022 的设计，非 OpenAI）：准确率接近正常示例 → 示例主要激活格式与标签空间；掉到 zero-shot 水平 → 标签映射被用到。正式四尺寸跑完后再加开关。见 [[gpt-3-in-context-learning]] §11.2。
+
 ## Next Experiment
 
 E4（Track B）：reward model + 策略优化，换用小型 pretrained LM。
