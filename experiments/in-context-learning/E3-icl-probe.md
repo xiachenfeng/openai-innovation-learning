@@ -29,6 +29,7 @@
 - `icl_probe.py`：对每个 (model, k, seed)，从 SST-2 train 抽 K 条示例，对固定的 200 条 validation 查询逐条前向，取末位 " positive" 与 " negative" 两个 token 的 logit 比大小。记录 acc、多数类基线、预测为 positive 的比例（看先验偏向）、平均 prompt 长度。`--summarize` 按 model × k 打印均值 ± 样本标准差与 gap。可选 `--task addition`：两位数加法，贪心生成 4 个 token 解析整数。
 - `run_probe.sh`：先冒烟（gpt2，K ∈ {0,4}，2 组示例，50 条），再正式跑四个尺寸。
 - 三处 `TODO(you)`：(1) 拼 prompt；(2) 打分式读法比较两个 logit；(3) 跨 seed 样本标准差。
+- 模型不在本目录定义：用 Hugging Face `transformers` 的 `GPT2LMHeadModel`（`modeling_gpt2.py` 的 PyTorch 移植，结构与 E1 `model.py` 逐层对应，见 [[gpt-3-in-context-learning]] §11.11），权重为 OpenAI 2019 官方 checkpoint；官方原版定义在 github.com/openai/gpt-2 `src/model.py`。
 
 ## Variables
 
