@@ -90,6 +90,15 @@ bash ../sync.sh "E3: 填空并跑四个尺寸"
 
 示例标签随机打乱的 K = 8 对照（Min 等 2022 的设计，非 OpenAI）：准确率接近正常示例 → 示例主要激活格式与标签空间；掉到 zero-shot 水平 → 标签映射被用到。正式四尺寸跑完后再加开关。见 [[gpt-3-in-context-learning]] §11.2。
 
+在 E1 tiny GPT 上复现 induction head 相变曲线（2026-10-11 追问引出，非 OpenAI，Olsson 等 2022 的探针）：
+
+1. `train.py` 改为每隔固定步数存一个 checkpoint（现只在结束时存 `e1_tiny_gpt.pt`）；
+2. `model.py` 的 attention 加一个开关返回 `att`（步 6 softmax 之后的 `[B, h, T, T]`）；
+3. 探针脚本：随机抽 N 个 token 拼成长 2N 的序列，batch 几百条，对每个 checkpoint 在 `no_grad` 下前向一次，取后半段 loss 减前半段 loss、每层每头在后半段各行落在"上次出现 + 1"那一列的注意力均值（prefix-matching score）；
+4. 按训练步数画曲线，看是否出现窄窗口跳变，以及哪一层哪一头跳。
+
+预期：E1 模型层数 ≥ 2 时可看到；若只有 1 层应看不到（需要 K-composition）。优先级低于 E3 主体，四尺寸跑完后再考虑。见 [[gpt-3-in-context-learning]] §11.5。
+
 ## Next Experiment
 
 E4（Track B）：reward model + 策略优化，换用小型 pretrained LM。
