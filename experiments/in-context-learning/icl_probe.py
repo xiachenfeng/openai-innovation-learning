@@ -65,7 +65,7 @@ def build_prompt(demos, query_sentence: str) -> str:
     query_block = sst2_line(query_sentence, None)
     # TODO(you) (1): 把示例块和查询块拼成最终 prompt。K = 0 时 demo_block 是空串，不要多出前导空行。
     #   提示：demo_block 非空时 demo_block + "\n\n" + query_block，否则只有 query_block。
-    return (demo_block + "\n\n" + query_block) if demo_block else query_block  # ← 替换这一行
+    return query_block  # ← 替换这一行（现在只返回查询，示例被丢掉了）
 
 
 def make_addition(n: int, seed: int):
@@ -119,7 +119,7 @@ def run_sst2(tok, model, device, train, val, k: int, seed: int, n_eval: int):
             logits = model(**enc).logits                       # [1, T, V]
             # TODO(you) (2): 打分式读法。取最后一个位置的 logits，比较 pos_id 与 neg_id 两项，大者为预测（1 = positive）。
             #   提示：last = logits[0, -1]；pred = int(last[pos_id] > last[neg_id])
-            pred = int(logits[0, -1, pos_id] > logits[0, -1, neg_id])  # ← 替换这一行
+            pred = 1  # ← 替换这一行（现在永远预测 positive，acc 会等于 positive 的比例）
             correct += int(pred == y)
             pred_pos += pred
     n = min(n_eval, len(val))
@@ -167,7 +167,7 @@ def summarize(csv_path: str):
                 mean = float(np.mean(accs))
                 # TODO(you) (3): 跨 seed 的样本标准差（ddof=1）；只有一个样本时记 0。
                 #   提示：np.std(accs, ddof=1) if len(accs) > 1 else 0.0
-                std = float(np.std(accs, ddof=1)) if len(accs) > 1 else 0.0  # ← 替换这一行
+                std = 0.0  # ← 替换这一行（现在标准差恒为 0，看不出噪声）
                 means[k] = mean
                 cells.append(f"{mean:.3f}±{std:.3f}".rjust(16))
             gap = means[max(ks)] - means[min(ks)]
