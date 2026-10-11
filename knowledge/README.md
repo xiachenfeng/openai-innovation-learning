@@ -7,6 +7,7 @@
 ```text
 knowledge/
   index.md                       ← 总入口（hub）
+  papers.md                      ← 论文台账（hub）：每篇论文读到哪、哪张卡引用了什么
   A-pretraining-scaling/
     A-pretraining-scaling.md     ← 第 1 级：主线 MOC（Map of Content）
     gpt-3-in-context-learning.md ← 第 2 级：概念卡
@@ -70,7 +71,7 @@ tags: [openai, track/B, status/candidate]
 
 ## 图：mermaid 规范
 
-1. 训练流程和因果链用 `flowchart LR`，多阶段用 `subgraph`；agent loop 和 tool call 用 `sequenceDiagram`；router 和状态机用 `stateDiagram-v2`；
+1. 训练流程和因果链用 `flowchart TB`（竖向，见第 8 条），多阶段用一层 `subgraph`；agent loop 和 tool call 用 `sequenceDiagram`；router 和状态机用 `stateDiagram-v2`；
 2. 节点按语义着色，统一用下面这套 `classDef`，浅底深字，亮暗主题都可读：
 
 ```text
@@ -88,6 +89,7 @@ classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
 5. 数据节点用圆柱 `[( )]`，目标函数用六边形 `{{ }}`，决策用菱形 `{ }`；
 6. 一张图只讲一件事，超过 12 个节点就拆两张；
 7. 曲线关系（scaling、pass@k）优先用表格给数值，再用文字描述形状；`xychart-beta` 依赖 Obsidian 内置 mermaid 版本，可试用但不作为唯一表达。
+8. 版式硬约束（2026-09-20 起，详见 `AGENTS.md` Teaching with Diagrams 第 8 条）：一律 `flowchart TB`；节点与边标签每行 ≤ 20 个汉字，用 `<br/>` 拆行；≤ 10 层；不嵌套 subgraph；subgraph 标题留空，用框内第一个无边框节点（`classDef label fill:none,stroke:none`）当标题并用 `~~~` 接到下一节点；源码开头加统一的 init 指令。目标是 16 寸屏一屏看全、A4 整张打印不裁切。示例见 `A-pretraining-scaling/scaling-laws.md` §11.3。左右并列对照时（如 fine-tune vs prompt）：两个 subgraph 之间没有连线时，框内必须写 `direction TB`，否则会被排成一条横带；mermaid 11 会把先声明的框放在右边，所以想放在左边的那个要后声明。示例见 `A-pretraining-scaling/gpt-2-zero-shot.md` §2.2。
 
 ## 数学：LaTeX 规范
 
@@ -116,7 +118,7 @@ classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
 3. **自己写**：flowchart 只要四个语法点：
 
 ```text
-flowchart LR
+flowchart TB
   A[节点文字]:::model --> B[另一个节点]:::data
   A -->|"边上的标签，有问号或空格要加引号"| C[第三个]
   classDef model fill:#FFF4E0,stroke:#D98E04,color:#111

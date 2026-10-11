@@ -21,6 +21,12 @@
 
 ## Experiment Progress
 
+## Time Allocation Check
+
+- 本周耗时最多的节点：
+- 其 importance：
+- 连续第几周不是 importance 5（0 表示正常）：
+
 ## Unresolved Questions
 
 ## Review Priorities

@@ -67,6 +67,7 @@
 - `inbox.md`
 - `state/`
 - `knowledge/<track>/<concept>.md`，最多两级：第 1 级是与文件夹同名的主线 MOC，第 2 级是概念卡；canonical/candidate 用 frontmatter 的 `status` 区分。规范见 `knowledge/README.md`
+- `knowledge/papers.md`：论文台账，每篇论文读到哪、哪张卡引用了它的什么。规则见 Knowledge Extraction 的「论文台账」
 - `sessions/`
 - `weekly-reviews/`
 - `experiments/`：见 `experiments/README.md` 的实验总表
@@ -77,7 +78,7 @@
 
 ## Session Start
 
-1. 获取日期；
+1. 获取日期；先 `git pull --ff-only origin main`，把学习者从云主机推上来的代码与结果 CSV 拉下来，pull 失败或有冲突要立刻报告；
 2. 读取 curriculum、timeline、state、source status、inbox 和最近 sessions；
 3. 检查本周周报；
 4. 用不超过十行报告当前阶段、薄弱点、待复习项、source freshness 和推荐任务；
@@ -94,8 +95,26 @@
 3. 对比类内容（fine-tune vs ICL、ORM vs PRM、单 agent vs multi-agent）用左右并列的两张图或一张对照表；
 4. 每条主线结束时产出一张"主线因果图"，节点是创新，边上写"解决了什么瓶颈"；
 5. 图保存进知识卡的"图解"段，不只留在对话里；
-6. 需要交互（如调 budget 看 pass@k 曲线）时可以用 Artifact，但静态知识卡里必须有 markdown 可渲染的版本；
+6. 聊天窗口不渲染 mermaid 代码块（只显示源码）。每次 session 讲解涉及的图，用 Artifact 发布一个"本节图板"页面（`<pre class="mermaid">` 原生渲染），聊天里给链接并用一句话说明每张图讲什么；同一 session 内后续的图追加到同一个图板重新发布，不新建。知识卡里保留同一份 mermaid 源码，由 Obsidian 渲染。需要交互（如调 budget 看 pass@k 曲线）时同样用 Artifact；
 7. 图和数学只用 Obsidian 原生支持的 mermaid 与 LaTeX，仓库里不放图片文件；配色、节点形状、记号约定见 `knowledge/README.md`。
+8. **知识卡里的图必须能在 16 寸 MacBook Pro 上一屏看全，并能整张印在 A4 纸上**（Obsidian 导出 PDF 不缩放，超宽部分直接裁掉）。规则：
+   - 一律 `flowchart TB` 竖向排列，不用 LR；
+   - 节点标签每行不超过 20 个汉字，长的用 `<br/>` 拆行；边标签同样拆行；自然宽度控制在约 550px 以内；
+   - 层数不超过 10 层，相邻步骤合并进一个节点而不是加层；
+   - 不用嵌套 subgraph（节点连到外部时其 `direction` 会被忽略）；subgraph 不写标题（标题会被第一个节点盖住），改用框内第一个无边框节点当标题，用不可见连线 `~~~` 接到下一个节点；
+   - 源码开头加 `%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%`；
+   - 图板 Artifact 不受此限，但知识卡与图板共用同一份源码时以知识卡的规格为准。
+
+### 对话里的公式与特殊符号（防乱码）
+
+对话窗口只渲染 GitHub 风格 markdown，不渲染 LaTeX，而且 `$`、`<`、`>` 会被当成 markdown 或 HTML 语法。规则：
+
+1. 对话里不写 `$...$` 或 `$$...$$`。公式用 Unicode 写在行内（Σ、log P(u_i | u_{i−k}…u_{i−1}; Θ)、h_l^m、W_y），复杂公式放进 ```` ```text ```` 代码块；LaTeX 只写进 `knowledge/` 下的卡片，由 Obsidian 渲染；
+2. 字面的 `$`、`<s>`、`<e>`、`<pad>` 等特殊 token 一律放进反引号，否则 `$` 会配对成公式、`<s>` 会被当成 HTML 删除线；
+3. 表格单元格里不放公式和 `|`；符号表用"记号 / 含义 / 对应步骤"三列，记号用反引号包住；
+4. 知识卡里照旧用 LaTeX，但同一段内容写进对话时必须按第 1 条转写，不能原样复制。
+
+机制保障：`.claude/settings.json` 注册了 Stop hook `.claude/hooks/check-chat-latex.py`。每次回复结束前它扫描最后一条 assistant 消息（忽略代码块和行内代码），命中 `$...$`、LaTeX 命令、裸写 `<s>`/`<e>`、表格里的 `$` 时拒绝结束并要求重写；同一轮只拦一次，避免死循环。改规则先改脚本里的 `CHECKS`。
 
 ### 画图分工（三档）
 
@@ -212,8 +231,14 @@
 - 每个实验记录中写明算力与 API 花费；
 - 不得将 toy experiment 描述为完整复现闭源模型；
 - E8 只在无害文本分类环境进行。
+- **实验代码自动提交并推送。** 学习者的 GPU 环境是申请的云主机，靠 `git pull` 取代码。凡是新生成或修改的、需要学习者编辑后运行的代码文件（`experiments/**` 下的 `.py`、`.sh`、`.ipynb`、requirements 等，连同对应的实验记录 `E*.md`），生成并本地验证后立即 `git add` 这些文件、单独 commit（消息格式 `E<编号>: <做了什么>`）并 `git push origin main`，不等 session 结束、不等用户确认。只提交这些文件，state、knowledge、sessions 仍按 Session End 规则由用户决定是否提交。push 失败要在回复里明说，并给出用户手动推送的命令。
+- **代码只在云主机上编辑。** 学习者在云主机上改代码、跑实验，用 `bash experiments/sync.sh "E<编号>: ..."` 提交推送（含 `outputs/*.csv` 结果，不含 checkpoint）。教练改 `experiments/` 下任何文件前必须先 pull，避免覆盖云端改动；教练不改学习者已填空的行。
 
 ---
+
+## 章节结束：主动提示换 session
+
+一个课程节点（如 A2）讲完十个 lens、检查题评完分、知识卡与 state 写好之后，教练必须在回复末尾主动提示：**"本节结束，建议新开一个 session 再进入下一节"**，并附一句下一节的名称与准备事项（如要先跑的实验）。理由：一个节点一个 session，上下文干净、session 记录一节一份、便于按节回溯。用户说"继续"才在当前 session 讲下一节，不主动跨节。追问、复测、实验结果解读属于当前节，不触发提示。
 
 ## Session End
 
@@ -222,7 +247,7 @@
 3. 强制执行 Knowledge Extraction；
 4. 若本次 session 收到了用户的因果表（第一档）或填空结果（第二档），转成 mermaid 写入对应 MOC 的"我的版本"，并记录评分；
 5. 展示文件变化；
-6. 不自动 Git commit。
+6. 不自动 Git commit（实验代码例外，见 Experiment Rules 的自动提交规则）。
 
 ### Knowledge Extraction
 
@@ -248,6 +273,22 @@
 #### 毕业交付物的状态
 
 毕业要求的知识卡可以是 candidate 状态，但必须在卡内写明为何未进 canonical。
+
+#### 追问入卡（默认执行）
+
+用户在对话里的每一个追问，回答完后立刻追加到对应概念卡的"追问与澄清"段（无此段则新建为第 11 节），不等 session 结束、不等用户要求。格式：`### 11.N 问题（YYYY-MM-DD 追问）`，正文写结论与机制，不复述对话；涉及别的卡时加 `[[wikilink]]`。追问对应实验代码时，同时在实验记录里补一句。回复末尾用一行说明写进了哪张卡。
+
+#### 论文台账（默认执行）
+
+`knowledge/papers.md` 记录课程用到的每篇论文，每篇一条：论文名、作者 / 机构 / 年份、来源级别（OpenAI 官方 / 非 OpenAI 前置 / 非 OpenAI 对照）、`sources/official-sources.md` 的编号、课程节点、已读章节（论文自身的 §、图、表）、状态（已学 / 部分 / 仅引用 / 仅提及 / 未学），以及"引用处"表，每行写 `[[概念卡]] §N` 引用了论文的什么信息（公式、图表号、数字、结论，只写事实不写评价）。
+
+触发时机与追问入卡相同，不等 session 结束、不等用户要求：
+
+1. 写卡、讲解或回答追问时第一次引用某篇论文：新建条目，同时把它补进 `sources/official-sources.md`；
+2. 已有论文被引用了新信息，或讲解覆盖了它新的章节：追加引用处行、更新已读章节与状态；
+3. 回复末尾那一行"写进了哪张卡"同时说明台账改了什么。
+
+总表与逐篇两部分都要改；总表按 P-编号递增，不重排。Session End 第 3 步 Knowledge Extraction 包含核对本次 session 引用的论文是否都已入账，session 记录里有「论文台账更新」一段。
 
 #### No Change
 

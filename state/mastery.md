@@ -8,10 +8,10 @@ Mastery 变化规则见 `AGENTS.md` Mastery Scale。
 | Knowledge Point | Importance | Mastery | Last Tested | Evidence |
 |---|---:|---:|---|---|
 | A1 Transformer decoder / next-token objective | 5 | 1 | 2026-09-13 | 诊断：识别交叉熵与 causal mask，不知 block 结构与 shape |
-| A2 Sentiment Neuron → GPT-1 pretrain + fine-tune | 5 | 0 | 2026-09-13 | 诊断：fine-tune 差异答成省算力 |
-| A3 GPT-2 zero-shot / prompt conditioning | 4 | 0 | - | 未测试 |
-| A4 Scaling Laws（Kaplan、Chinchilla 对照、predictable scaling） | 5 | 1 | 2026-09-13 | 诊断：说出 N/D/C 与 loss 幂律，Chinchilla 方向对但无依据 |
-| A5 GPT-3 in-context learning | 5 | 0 | 2026-09-13 | 诊断：不知 in-context learning 定义 |
+| A2 Sentiment Neuron → GPT-1 pretrain + fine-tune | 5 | 2 | 2026-09-27 | 09-27 复测解读题多个维度 ≤1（Q2 把单种子结论当成立、Q3 答不出预训练为何无效）→ 按降级规则 3 → 2。机制讲解题此前达标；短板集中在"差值 vs 噪声"判断与表征—任务错配 |
+| A3 GPT-2 zero-shot / prompt conditioning | 4 | 1 | 2026-09-27 | 09-27 复测：两种读法识别对（correctness 2）→ 1。仍把 few-shot 当成读法，条件与读法的正交关系未建立 |
+| A4 Scaling Laws（Kaplan、Chinchilla 对照、predictable scaling） | 5 | 2 | 2026-09-20 | E2 结果解读复测 correctness 3 / mechanism 3（L(N,D) 数据瓶颈、样本效率、记忆训练集三条机制答对）→ 2。短板：欠训练假象与 Chinchilla 批评的联系答不出；连续六次未写自评信心 |
+| A5 GPT-3 in-context learning | 5 | 1 | 2026-10-11 | 检查题：Q1 解释 correctness 2 / mechanism 2（能说'从 context 学、不更新参数'，路径未说到注意力，KV cache 当成最终去向）；Q2 证据 correctness 3（单点不能谈趋势）；Q3 条件 × 读法二维表答不出（A3 同一短板第三次）。按识别门槛升 1；升 2 需 mechanism ≥ 3 |
 
 ## Track B：Alignment
 

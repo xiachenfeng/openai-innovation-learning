@@ -37,6 +37,10 @@
 
 ## Canonical Knowledge Changes
 
+## 论文台账更新
+
+新增 / 追加引用处 / 已读章节变化（`knowledge/papers.md`）：
+
 ## Experiment Progress
 
 ## Mastery Changes

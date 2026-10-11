@@ -36,7 +36,7 @@ tags: [openai, track/A, status/candidate]
 ## 2. 核心思想
 
 ```mermaid
-flowchart LR
+flowchart TB
   A[...]:::data --> B[...]:::model
   classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
   classDef model fill:#FFF4E0,stroke:#D98E04,color:#111

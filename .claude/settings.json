@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-chat-latex.py",
+            "timeout": 10,
+            "statusMessage": "检查对话公式格式"
+          }
+        ]
+      }
+    ]
+  }
+}

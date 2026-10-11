@@ -21,6 +21,7 @@ openai.com 对 curl、WebFetch 和内置浏览器返回 403，逐页打开需由
 | A-6 | GPT-3 | https://openai.com/index/language-models-are-few-shot-learners/ | 知识确认 |
 | A-7 | GPT-4 research（predictable scaling 部分） | https://openai.com/index/gpt-4-research/ | 知识确认 |
 | A-8 | Generative models（2016，背景） | https://openai.com/index/generative-models/ | 知识确认 |
+| A-9 | An Empirical Model of Large-Batch Training（McCandlish 等，2018，梯度噪声尺度与临界 batch） | https://arxiv.org/abs/1812.06162 | 知识确认，A5 §11.4 引用 |
 
 ## Track B：Alignment
 
@@ -108,6 +109,9 @@ openai.com 对 curl、WebFetch 和内置浏览器返回 403，逐页打开需由
 | R-2 | Chinchilla / Training Compute-Optimal LLMs（2022） | A4 对照 | https://arxiv.org/abs/2203.15556 | 知识确认 |
 | R-3 | DPO（2023） | B3 对照 | https://arxiv.org/abs/2305.18290 | 知识确认 |
 | R-4 | Self-Consistency（2022） | C3 对照 | https://arxiv.org/abs/2203.11171 | 知识确认 |
+| R-5 | µP / µTransfer，Tensor Programs V（2022，微软主导，OpenAI 合著；前作 Tensor Programs IV arXiv 2011.14522） | A5 §11.4 对照（lr 随宽度缩小的事后解释） | https://arxiv.org/abs/2203.03466 | 知识确认，作者名单待核对 |
+| R-6 | A Mathematical Framework for Transformer Circuits（2021，Anthropic） | A5 §11.5 对照（两层 attention-only 模型里的 induction 电路，K-composition） | https://transformer-circuits.pub/2021/framework/index.html | 知识确认 |
+| R-7 | In-context Learning and Induction Heads（2022，Anthropic） | A5 §11.5 对照（ICL 机制假设、相变证据）；Semantic Scholar 2026-10-11 引用约 1,075，在 Anthropic LLM 论文里约第 8～9 位 | https://arxiv.org/abs/2209.11895 | 知识确认，引用数 API 取得 |
 
 ## Rules
 

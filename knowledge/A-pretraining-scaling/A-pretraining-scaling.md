@@ -2,7 +2,7 @@
 title: Track A · Pretraining & Scaling
 track: A
 level: 1
-updated: 2026-09-13
+updated: 2026-10-11
 tags: [openai, track/A, moc]
 ---
 
@@ -35,20 +35,20 @@ tags: [openai, track/A, moc]
 
 ## 概念卡
 
-| # | 卡片 | 状态 | Mastery |
-|---|---|---|---|
-| A1 | [[transformer-decoder-next-token]] | canonical | 1 |
-| A2 | [[sentiment-neuron-gpt-1]] | 未写 | 0 |
-| A3 | [[gpt-2-zero-shot]] | 未写 | 0 |
-| A4 | [[scaling-laws]] | 未写 | 0 |
-| A5 | [[gpt-3-in-context-learning]] | 未写 | 0 |
+| #   | 卡片                                 | 状态        | Mastery |
+| --- | ---------------------------------- | --------- | ------- |
+| A1  | [[transformer-decoder-next-token]] | canonical | 1       |
+| A2  | [[sentiment-neuron-gpt-1]]         | canonical | 2       |
+| A3  | [[gpt-2-zero-shot]]                | canonical | 1       |
+| A4  | [[scaling-laws]]                   | canonical | 2       |
+| A5  | [[gpt-3-in-context-learning]]      | canonical | 1       |
 
 ## 实验
 
-E1 tiny GPT → E2 scaling 拟合 → E3 ICL 探针，共用一套代码。
+E1 tiny GPT → E2 scaling 拟合（共用 E1 代码）→ E3 ICL 探针（换用 GPT-2 四个开源尺寸，因为 ICL 随规模出现，E1 的 80 万参数字符模型上没有信号）。
 
 ## 对照（非 OpenAI）
 
-Attention Is All You Need（A1 前置）、Chinchilla（A4 对照）。
+Attention Is All You Need（A1 前置）、Chinchilla（A4 对照）。A5 用到的 SST-2 数据集（Stanford，非 OpenAI）只作 E3 的探针任务。
 
 ← [[index]]

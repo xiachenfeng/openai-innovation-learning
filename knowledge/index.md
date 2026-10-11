@@ -1,7 +1,7 @@
 ---
 title: OpenAI 创新知识库
 level: 0
-updated: 2026-09-13
+updated: 2026-10-11
 tags: [openai, hub]
 ---
 
@@ -32,6 +32,14 @@ flowchart LR
   classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
   classDef data fill:#EEF3FA,stroke:#3B6BB3,color:#111
 ```
+
+## 论文台账
+
+课程用到的每篇论文读到哪、哪张卡引用了它的什么：[[papers|论文台账]]。
+
+## 术语表
+
+LLM 时代新造或改义的专有名词，按使用频率分档：[[glossary|LLM 时代术语表]]。
 
 ## 规范
 

@@ -1,10 +1,10 @@
 # Source Status
 
-Last checked: 2026-09-13（限定 openai.com 域名的搜索；页面未逐条打开）
+Last checked: 2026-09-19（限定 openai.com 域名的搜索；页面未打开。上一次 2026-09-13）
 
 ## Current Public Frontier
 
-- Latest public GPT model: **GPT-6 Astra**（2026-08-01 之后发布；有 system card、safety overview 和 "Path to Astra" 文章）
+- Latest public GPT model: **GPT-6 Astra**（2026-09-03 发布，09-19 搜索核实日期；有 system card、safety overview 和 "Path to Astra" 文章；官方称首个达到 Preparedness Framework cybersecurity Critical 级别的模型）
 - 状态：未分类，已建 `knowledge/F-frontier/gpt-6-astra.md`
 - 上一代：GPT-5.6 系列（Sol / Terra / Luna），已纳入 Track C、D
 - GPT-5.6 公开系统机制：max reasoning effort；ultra mode 用 subagents 并行 workstream；显式 prompt cache breakpoint
@@ -17,6 +17,7 @@ Last checked: 2026-09-13（限定 openai.com 域名的搜索；页面未逐条�
 - GPT-Red：self-play red teaming；有论文 PDF；官方称已接入生产模型训练（Public system behavior）
 - Codex：agent loop、App Server harness、subagents 文档、Symphony
 - gpt-oss：唯一可深读的公开架构
+- （09-19 新增线索，未核验内容）09-06 "Research acceleration: the view inside OpenAI"：coding agent 在内部研究中的使用数据，关联 Track D；09-08 Navier–Stokes 的 AI 生成解与 Lean 形式化证明，关联 Track C。两条只记 URL，未建卡
 
 ## Watch List
 
