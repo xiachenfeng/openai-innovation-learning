@@ -22,7 +22,7 @@
 
 - 机器：用户的 4090 云主机；本地 Mac 无 torch / transformers，教练只做了语法检查与 pyflakes；
 - 依赖：`requirements.txt`（torch、transformers、datasets、numpy）；
-- 数据与模型：SST-2（Hugging Face `stanfordnlp/sst2`，回退 `glue/sst2`）；GPT-2 四个尺寸的官方权重（OpenAI 2019 公开，经 Hugging Face 分发）。首次下载约 7GB。
+- 数据与模型：SST-2（Stanford Sentiment Treebank 二分类版，Socher 等 2013，非 OpenAI；影评单句正 / 负，训练集约 6.7 万条、验证集 872 句；与 A2 的 Sentiment Neuron、GPT-1 评测同一数据集。Hugging Face `stanfordnlp/sst2`，回退 `glue/sst2`）；GPT-2 四个尺寸的官方权重（OpenAI 2019 公开，经 Hugging Face 分发）。首次下载约 7GB。
 
 ## Implementation
 
