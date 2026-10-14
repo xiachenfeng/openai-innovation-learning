@@ -39,11 +39,11 @@ B5 建立在 [[C-reasoning]] 之上，学完 Track C 再回来。
 
 | # | 卡片 | 状态 | Mastery |
 |---|---|---|---|
-| B1 | [[ppo-human-preferences-2017]] | 未写 | 0 |
-| B2 | [[rlhf-learning-to-summarize]] | 未写 | 0 |
-| B3 | [[instructgpt-chatgpt]] | 未写 | 0 |
-| B4 | [[scalable-oversight]] | 未写 | 0 |
-| B5 | [[deliberative-alignment-gpt-red]] | 未写 | 0 |
+| B1 | [[B1-ppo-human-preferences-2017]] | 未写 | 0 |
+| B2 | [[B2-rlhf-learning-to-summarize]] | 未写 | 0 |
+| B3 | [[B3-instructgpt-chatgpt]] | 未写 | 0 |
+| B4 | [[B4-scalable-oversight]] | 未写 | 0 |
+| B5 | [[B5-deliberative-alignment-gpt-red]] | 未写 | 0 |
 
 ## 实验
 

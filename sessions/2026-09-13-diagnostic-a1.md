@@ -57,7 +57,7 @@ E1 骨架写入 `experiments/pretraining/tiny_gpt/`，两处填空（causal mask
 ## Files Updated
 
 - state/answer-history.csv（+9 行）、state/mastery.md、state/current.md、state/mistakes.md、inbox.md
-- knowledge/A-pretraining-scaling/transformer-decoder-next-token.md（新建，canonical，mastery 1）
+- knowledge/A-pretraining-scaling/A1-transformer-decoder-next-token.md（新建，canonical，mastery 1）
 - knowledge/A-pretraining-scaling/A-pretraining-scaling.md（A1 行）
 - experiments/pretraining/E1-tiny-gpt.md、tiny_gpt/model.py、tiny_gpt/train.py（新建）
 

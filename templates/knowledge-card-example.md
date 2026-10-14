@@ -36,7 +36,7 @@ tags: [openai, track/B, status/example]
 
 ## 1. 承接的瓶颈
 
-[[gpt-3-in-context-learning|GPT-3]] 能 few-shot，但不听指令、会编造、会输出有害内容；原因是预训练目标"预测下一个 token"和用户目标"有帮助且诚实"不一致。[[rlhf-learning-to-summarize|Learning to Summarize]] 已证明 RM + PPO + KL 在单一任务上可行，问题是能否推广到开放指令。
+[[A5-gpt-3-in-context-learning|GPT-3]] 能 few-shot，但不听指令、会编造、会输出有害内容；原因是预训练目标"预测下一个 token"和用户目标"有帮助且诚实"不一致。[[B2-rlhf-learning-to-summarize|Learning to Summarize]] 已证明 RM + PPO + KL 在单一任务上可行，问题是能否推广到开放指令。
 
 ## 2. 核心思想
 
@@ -101,7 +101,7 @@ $$
 | $\beta\,\mathrm{KL}$ 项 | 按 token 累加的惩罚，防止策略偏离 SFT 太远导致 RM 被 hack | 每个 token 的 reward 里减去 |
 | $\gamma$ 项 | 混入预训练梯度，减轻 alignment tax | 与 PPO 梯度相加 |
 
-**PPO 本身**（来自 [[ppo-human-preferences-2017|PPO 2017]]）：
+**PPO 本身**（来自 [[B1-ppo-human-preferences-2017|PPO 2017]]）：
 
 $$
 L^{\mathrm{CLIP}}(\theta)
@@ -133,7 +133,7 @@ sequenceDiagram
 
 ## 5. 推理行为
 
-推理时只用 $\pi_\theta$，RM 和参考模型都不参与；行为变化全部体现在权重里，与 [[gpt-3-in-context-learning|ICL]] 靠上下文改变行为不同。
+推理时只用 $\pi_\theta$，RM 和参考模型都不参与；行为变化全部体现在权重里，与 [[A5-gpt-3-in-context-learning|ICL]] 靠上下文改变行为不同。
 
 ## 6. Scaling 维度
 
@@ -150,12 +150,12 @@ sequenceDiagram
 ## 8. 局限
 
 - 对齐到的是标注者群体的偏好，不是普遍偏好；
-- RM 可被过优化（见 [[rlhf-learning-to-summarize]] 的 over-optimization 曲线）；
+- RM 可被过优化（见 [[B2-rlhf-learning-to-summarize]] 的 over-optimization 曲线）；
 - 仍会编造事实，仍能被越狱。
 
 ## 9. 后续影响
 
-直接影响 [[scalable-oversight]]（标注者不够强怎么办）和 [[process-vs-outcome-supervision]]（对整段打分粗，能否按步骤打分）。非 OpenAI 的 DPO 把 RM 和 PPO 合并成一个闭式损失，是最常见的对照。
+直接影响 [[B4-scalable-oversight]]（标注者不够强怎么办）和 [[C1-process-vs-outcome-supervision]]（对整段打分粗，能否按步骤打分）。非 OpenAI 的 DPO 把 RM 和 PPO 合并成一个闭式损失，是最常见的对照。
 
 ## 10. 与相关方法的区别
 

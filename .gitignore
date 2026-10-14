@@ -8,3 +8,4 @@ __pycache__/
 cache/
 *.tmp
 .obsidian/
+.claude/settings.local.json

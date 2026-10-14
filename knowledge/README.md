@@ -10,7 +10,7 @@ knowledge/
   papers.md                      ← 论文台账（hub）：每篇论文读到哪、哪张卡引用了什么
   A-pretraining-scaling/
     A-pretraining-scaling.md     ← 第 1 级：主线 MOC（Map of Content）
-    gpt-3-in-context-learning.md ← 第 2 级：概念卡
+    A5-gpt-3-in-context-learning.md ← 第 2 级：概念卡
   B-alignment/ … C-reasoning/ … D-agents-systems/ … S-survey/ … F-frontier/
 ```
 
@@ -20,9 +20,10 @@ knowledge/
 
 ## 文件命名
 
-- 全小写 kebab-case 英文，例如 `instructgpt-chatgpt.md`；
+- 概念卡文件名 = `<节点>-<概念>.md`，节点是 curriculum 的编号（A1～A5、B1～B5、C1～C5、D1～D5、S1、S2），F 线没有固定节点，用 `F-`；例如 `B3-instructgpt-chatgpt.md`。节点在前，Obsidian 文件列表自然按课程顺序排；
+- 概念部分全小写 kebab-case 英文；MOC、index、papers、glossary 这些 hub 文件不加节点前缀；
 - 全库唯一，因为 `[[wikilink]]` 按文件名解析，不看路径；
-- 中文名和常用缩写放进 frontmatter 的 `aliases`，这样 `[[InstructGPT]]` 也能跳转。
+- 中文名和常用缩写放进 frontmatter 的 `aliases`，这样 `[[InstructGPT]]` 也能跳转；2026-10-14 加前缀改名时，旧文件名也放进了 `aliases`，旧链接仍可跳转。
 
 ## Frontmatter
 
@@ -89,7 +90,7 @@ classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
 5. 数据节点用圆柱 `[( )]`，目标函数用六边形 `{{ }}`，决策用菱形 `{ }`；
 6. 一张图只讲一件事，超过 12 个节点就拆两张；
 7. 曲线关系（scaling、pass@k）优先用表格给数值，再用文字描述形状；`xychart-beta` 依赖 Obsidian 内置 mermaid 版本，可试用但不作为唯一表达。
-8. 版式硬约束（2026-09-20 起，详见 `AGENTS.md` Teaching with Diagrams 第 8 条）：一律 `flowchart TB`；节点与边标签每行 ≤ 20 个汉字，用 `<br/>` 拆行；≤ 10 层；不嵌套 subgraph；subgraph 标题留空，用框内第一个无边框节点（`classDef label fill:none,stroke:none`）当标题并用 `~~~` 接到下一节点；源码开头加统一的 init 指令。目标是 16 寸屏一屏看全、A4 整张打印不裁切。示例见 `A-pretraining-scaling/scaling-laws.md` §11.3。左右并列对照时（如 fine-tune vs prompt）：两个 subgraph 之间没有连线时，框内必须写 `direction TB`，否则会被排成一条横带；mermaid 11 会把先声明的框放在右边，所以想放在左边的那个要后声明。示例见 `A-pretraining-scaling/gpt-2-zero-shot.md` §2.2。
+8. 版式硬约束（2026-09-20 起，详见 `AGENTS.md` Teaching with Diagrams 第 8 条）：一律 `flowchart TB`；节点与边标签每行 ≤ 20 个汉字，用 `<br/>` 拆行；≤ 10 层；不嵌套 subgraph；subgraph 标题留空，用框内第一个无边框节点（`classDef label fill:none,stroke:none`）当标题并用 `~~~` 接到下一节点；源码开头加统一的 init 指令。目标是 16 寸屏一屏看全、A4 整张打印不裁切。示例见 `A-pretraining-scaling/A4-scaling-laws.md` §11.3。左右并列对照时（如 fine-tune vs prompt）：两个 subgraph 之间没有连线时，框内必须写 `direction TB`，否则会被排成一条横带；mermaid 11 会把先声明的框放在右边，所以想放在左边的那个要后声明。示例见 `A-pretraining-scaling/A3-gpt-2-zero-shot.md` §2.2。
 
 ## 数学：LaTeX 规范
 

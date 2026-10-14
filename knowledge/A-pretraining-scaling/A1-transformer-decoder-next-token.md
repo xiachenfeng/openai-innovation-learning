@@ -1,6 +1,6 @@
 ---
 title: Transformer decoder 与 next-token objective
-aliases: [Transformer decoder, decoder-only, next-token prediction, 自回归语言模型, causal mask, A1]
+aliases: [Transformer decoder, decoder-only, next-token prediction, 自回归语言模型, causal mask, A1, transformer-decoder-next-token]
 track: A
 level: 2
 status: canonical
@@ -42,7 +42,7 @@ tags: [openai, track/A, status/canonical]
 - 长程依赖靠隐状态一路传递，距离一远信息就衰减；
 - 每个 NLP 任务各训一个专用模型，表征无法共享，标注数据稀缺时效果差。
 
-Transformer 用注意力让任意两个位置直接连线，一次前向并行处理整段序列；decoder-only 加 next-token 目标，则让"无标注文本"本身成为训练信号，为 [[sentiment-neuron-gpt-1]] 的 pretrain + fine-tune 铺路。
+Transformer 用注意力让任意两个位置直接连线，一次前向并行处理整段序列；decoder-only 加 next-token 目标，则让"无标注文本"本身成为训练信号，为 [[A2-sentiment-neuron-gpt-1]] 的 pretrain + fine-tune 铺路。
 
 ## 2. 核心思想
 
@@ -158,9 +158,9 @@ block 的 13 步只有两类：
 
 这个图景在后面反复出现：
 
-- [[scaling-laws]]：参数几乎全在"加工"里，算力却有一部分随 T² 涨，"模型变大"和"上下文变长"是两个成本轴；
-- [[codex-agent-loop-compaction]]：搬运要保留全部旧 token 的 K、V（KV cache），这是长上下文吃显存的根源；
-- [[gpt-oss-architecture]]：MoE 只把"加工"那一步换成多个专家，"搬运"不动。
+- [[A4-scaling-laws]]：参数几乎全在"加工"里，算力却有一部分随 T² 涨，"模型变大"和"上下文变长"是两个成本轴；
+- [[D3-codex-agent-loop-compaction]]：搬运要保留全部旧 token 的 K、V（KV cache），这是长上下文吃显存的根源；
+- [[D4-gpt-oss-architecture]]：MoE 只把"加工"那一步换成多个专家，"搬运"不动。
 
 ## 3. 目标函数与数据
 
@@ -232,7 +232,7 @@ $$
 GPT-2 small（L=12, d=768，bf16）：每 token 约 2×12×768×2 B ≈ 37 KB；T_cur = 4k 时约 150 MB
 ```
 
-这就是长上下文和多并发时显存的主要消耗，也是 [[codex-agent-loop-compaction]] 里 compaction 要压缩的对象。
+这就是长上下文和多并发时显存的主要消耗，也是 [[D3-codex-agent-loop-compaction]] 里 compaction 要压缩的对象。
 
 ### 5.2 一步 decode 的时序
 
@@ -270,13 +270,13 @@ GPT-2 small，前缀 1000 token，生成第 1000 个 token 这一步：
 
 ### 5.4 训练不需要 KV cache
 
-训练时 T 个位置一次前向同时算完，每个位置的 K、V 在这一步算出并立刻被同一步的注意力用掉，没有"下一步再用"的需求。autograd 把它们作为激活值保留到反向传播，但那是单步内的事，不跨步。例外是 RLHF / 推理 RL 的采样阶段（[[instructgpt-chatgpt]]、[[o1-rl-on-cot]]）：生成 rollout 时用 cache，随后的梯度更新不用。
+训练时 T 个位置一次前向同时算完，每个位置的 K、V 在这一步算出并立刻被同一步的注意力用掉，没有"下一步再用"的需求。autograd 把它们作为激活值保留到反向传播，但那是单步内的事，不跨步。例外是 RLHF / 推理 RL 的采样阶段（[[B3-instructgpt-chatgpt]]、[[C2-o1-rl-on-cot]]）：生成 rollout 时用 cache，随后的梯度更新不用。
 
 ### 5.5 多轮对话与 prefix caching
 
 对话被序列化成一条长序列：system → user₁ → assistant₁ → user₂ → …。API 是无状态的，每个新请求原则上要把整段历史重新 prefill。但 causal 结构保证位置 i 的 K、V 只依赖 token ≤ i，所以**只要前缀 token 序列逐位相同，它的 K、V 就逐位相同，可以复用**。实现上把 cache 按前缀分块存起来，用前缀 token 序列（的哈希）做 key，新请求命中多长前缀就跳过多长 prefill。任何一处改动（哪怕一个字）会让从那一位开始的全部 cache 失效，所以 system prompt 要放最前、动态内容放最后。
 
-公开边界：OpenAI API 的 prompt caching 是文档化的 Public system behavior（按前缀命中计费折扣；GPT-5.6 提供显式 cache breakpoint，见 [[function-calling-responses-api]]）；服务端如何存储、淘汰和跨机器共享 cache 未公开。
+公开边界：OpenAI API 的 prompt caching 是文档化的 Public system behavior（按前缀命中计费折扣；GPT-5.6 提供显式 cache breakpoint，见 [[D2-function-calling-deep-research]]）；服务端如何存储、淘汰和跨机器共享 cache 未公开。
 
 ### 5.6 LM head 的代价
 
@@ -297,7 +297,7 @@ $$
 | GPT-1（2018） | 12 | 768 | 12 | 512 | 117M |
 | tiny GPT（E1） | 4 | 128 | 4 | 128 | 0.80M（train.py 打印 801,664） |
 
-GPT-1 代入公式：12 × 12 × 768² ≈ 85M，加上 40478 × 768 ≈ 31M 的 embedding，约 116M，与公开值一致。E1 的 801,664 比 12·4·128² = 786,432 多出 LayerNorm、bias 与共享的 token embedding，逐项拆账和 Kaplan 的"非 embedding"口径见 [[scaling-laws]] §11.3。
+GPT-1 代入公式：12 × 12 × 768² ≈ 85M，加上 40478 × 768 ≈ 31M 的 embedding，约 116M，与公开值一致。E1 的 801,664 比 12·4·128² = 786,432 多出 LayerNorm、bias 与共享的 token embedding，逐项拆账和 Kaplan 的"非 embedding"口径见 [[A4-scaling-laws]] §11.3。
 
 **LM head 算力**（推导）：一个 batch 要算 B·T·V 次长度为 d 的点积，即 B·T·V·d 次乘加；主干每 token 约 12·L·d²。
 
@@ -322,11 +322,11 @@ LM head 随 V·d 线性增长，主干随 L·d² 增长，所以词表大小对�
 
 - 注意力对 T 是 $O(T^2)$ 的计算与显存，上下文长度受限（GPT-1 为 512）；
 - 位置由可学习的 position embedding 编码，无法外推到训练时没见过的长度；
-- 目标只是拟合语料分布，不区分"正确"与"常见"，这一点到 [[instructgpt-chatgpt]] 才由 RLHF 处理。
+- 目标只是拟合语料分布，不区分"正确"与"常见"，这一点到 [[B3-instructgpt-chatgpt]] 才由 RLHF 处理。
 
 ## 9. 后续影响
 
-直接影响 [[sentiment-neuron-gpt-1]]：GPT-1 把这个 decoder 当作预训练底座，再加任务专用的输入变换和 fine-tune。此后 [[gpt-2-zero-shot]]、[[gpt-3-in-context-learning]] 都只改规模和使用方式，不改这个结构与目标。
+直接影响 [[A2-sentiment-neuron-gpt-1]]：GPT-1 把这个 decoder 当作预训练底座，再加任务专用的输入变换和 fine-tune。此后 [[A3-gpt-2-zero-shot]]、[[A5-gpt-3-in-context-learning]] 都只改规模和使用方式，不改这个结构与目标。
 
 ## 10. 与相关方法的区别
 
@@ -423,7 +423,7 @@ E1 的 `get_batch` 每步在语料里随机抽 64 个起点、各截 T=128，起
 
 故意随机的三个理由：相邻文本高度相关，顺序取 batch 等于有效 batch 变小、梯度噪声大；随机起点让每个字符在 0～T−1 每个位置都出现，position embedding 不会绑定"第 t 位常出现什么"；代码最短（nanoGPT 写法）。代价是不保证覆盖、没有 epoch 概念。
 
-对照：数据小时（sft.py 的 100 条标注）改用打乱遍历、耗尽再打乱，避免放回抽样造成的样本曝光不均。大规模训练里重复是真实决策：GPT-3 论文表 2.2 给出 300B token 下各数据源的 epoch 数（Common Crawl 0.44、Wikipedia 3.4、Books1 1.9），也就是高质量的小数据源故意多看几遍，大而杂的数据源看不到一遍，用采样权重而不是数据量决定每个来源的曝光度，见 [[gpt-3-in-context-learning]]。
+对照：数据小时（sft.py 的 100 条标注）改用打乱遍历、耗尽再打乱，避免放回抽样造成的样本曝光不均。大规模训练里重复是真实决策：GPT-3 论文表 2.2 给出 300B token 下各数据源的 epoch 数（Common Crawl 0.44、Wikipedia 3.4、Books1 1.9），也就是高质量的小数据源故意多看几遍，大而杂的数据源看不到一遍，用采样权重而不是数据量决定每个来源的曝光度，见 [[A5-gpt-3-in-context-learning]]。
 
 ### 11.6 loss 的单位：nat、bit 与困惑度（2026-09-24 追问两次）
 
@@ -447,7 +447,7 @@ $$
 
 推论：不同词表的 loss 不能直接比。字符级 1.5 与 GPT-2 BPE 词表（$\ln 50257\approx10.8$ 起步）量纲相同，但每个 token 承载的文本长度不同，比较要换成 bits/byte，理由正是上面的压缩读法。图解页：https://claude.ai/artifact/Psi2yZUrFa4kVJccehLfhh
 
-**骰子读法（2026-09-28 ELI5 追问）。** 困惑度 = 模型手里骰子的面数：单个词的等效面数是 $1/p$，整句是各词面数的几何平均（惊讶值 $-\ln p$ 取算术平均再取 $e$ 次方），所以一个押 0.01 的词就能把整句拉高；低 PPL 只说明像训练文本，不等于回答好，RLHF 后 PPL 常升高（见 [[rlhf-instructgpt]]）。ELI5 图板（含可拖动概率的骰子演示与 E1 / GPT-2 词表尺子）：https://claude.ai/artifact/KYwj7isSTGng4vsLbwBdYz
+**骰子读法（2026-09-28 ELI5 追问）。** 困惑度 = 模型手里骰子的面数：单个词的等效面数是 $1/p$，整句是各词面数的几何平均（惊讶值 $-\ln p$ 取算术平均再取 $e$ 次方），所以一个押 0.01 的词就能把整句拉高；低 PPL 只说明像训练文本，不等于回答好，RLHF 后 PPL 常升高（见 [[B3-instructgpt-chatgpt]]）。ELI5 图板（含可拖动概率的骰子演示与 E1 / GPT-2 词表尺子）：https://claude.ai/artifact/KYwj7isSTGng4vsLbwBdYz
 ### 11.7 一个 token 的前向计算碰到了模型的每个参数吗（2026-09-28 追问）
 
 分三段看，以 GPT-2 small（$V=50257,\ d=768,\ L=12$）为例：
@@ -458,7 +458,7 @@ $$
 | 位置 embedding $W_p$ | 0.8M | 1 行，其余 1,023 行不碰 |
 | 12 层 block | 85.0M | 全部：每层 $W_Q,W_K,W_V,W_O$、MLP 两个矩阵、两个 LayerNorm 都乘过它 |
 
-结论：embedding 层是查表不是乘法，单 token 只用一行；进入 block 后每个稠密参数都参与；输出层因权重绑定又把整张 $W_e$ 乘一遍。所以一次前向几乎碰到全部 124M 参数，只有位置表的其他行例外。注意力读前面 token 的 K、V，但那些由同一批权重算出，不引入新参数。训练时的对偶说法：参与运算的参数才有梯度；$W_e$ 进门方向只有 batch 里出现过的行有梯度，出门方向 softmax 对全词表求导，所有行都被更新（错误行被压低）。例外：MoE（如 gpt-oss）每层只激活少数专家，"中间碰全部"不成立，见 [[gpt-oss-architecture]]。ELI5 图板：https://claude.ai/artifact/RvHqmEJq4pzTaAbv55BnJ2 。相关：[[scaling-laws]] §11.3 的参数拆账。
+结论：embedding 层是查表不是乘法，单 token 只用一行；进入 block 后每个稠密参数都参与；输出层因权重绑定又把整张 $W_e$ 乘一遍。所以一次前向几乎碰到全部 124M 参数，只有位置表的其他行例外。注意力读前面 token 的 K、V，但那些由同一批权重算出，不引入新参数。训练时的对偶说法：参与运算的参数才有梯度；$W_e$ 进门方向只有 batch 里出现过的行有梯度，出门方向 softmax 对全词表求导，所有行都被更新（错误行被压低）。例外：MoE（如 gpt-oss）每层只激活少数专家，"中间碰全部"不成立，见 [[D4-gpt-oss-architecture]]。ELI5 图板：https://claude.ai/artifact/RvHqmEJq4pzTaAbv55BnJ2 。相关：[[A4-scaling-laws]] §11.3 的参数拆账。
 
 ### 11.8 一层注意力里 softmax 做几次：$H \times T$（2026-09-28 追问）
 
@@ -472,7 +472,7 @@ $$
 | 每次 softmax 的长度 | $T$（causal 下第 $i$ 行只有 $i$ 个有效项） | $T$ |
 | 打分乘法数 | $H\cdot T^2\cdot D$ | $D$ 只进这里 |
 
-$D$ 决定一格分数（一个 $D$ 维点积）多贵，不改变格数与行数。causal mask 不改变次数，只把第 $i$ 行右侧填 $-\infty$，权重变 0，指数运算总数从 $H T^2$ 降到 $H\,T(T+1)/2$。整模型再乘层数 $L$。推理带 KV cache 时生成第 $t$ 个新 token 只算新增的一行：每层 $H$ 次，每次长 $t$。代码里 `softmax(scores, dim=-1)` 对 `[B, H, T, T]` 只调用一次，内部即 $B\cdot H\cdot T$ 行各做一次。ELI5 图板：https://claude.ai/artifact/99E9zJgrQDsNnMLvgKyoDN 。相关：§11.1 的 head 切分，[[scaling-laws]] 的 FLOPs 记账。
+$D$ 决定一格分数（一个 $D$ 维点积）多贵，不改变格数与行数。causal mask 不改变次数，只把第 $i$ 行右侧填 $-\infty$，权重变 0，指数运算总数从 $H T^2$ 降到 $H\,T(T+1)/2$。整模型再乘层数 $L$。推理带 KV cache 时生成第 $t$ 个新 token 只算新增的一行：每层 $H$ 次，每次长 $t$。代码里 `softmax(scores, dim=-1)` 对 `[B, H, T, T]` 只调用一次，内部即 $B\cdot H\cdot T$ 行各做一次。ELI5 图板：https://claude.ai/artifact/99E9zJgrQDsNnMLvgKyoDN 。相关：§11.1 的 head 切分，[[A4-scaling-laws]] 的 FLOPs 记账。
 
 ### 11.9 为什么训练用自然对数，写 log 为什么要标底（2026-09-28 追问）
 
@@ -487,7 +487,7 @@ $$
 
 若改用 $\log_2$，梯度变成 $(p_j - \mathbb{1}[j=y])/\ln 2$，多一个无意义的常数。数值实现上 $\ln\sum e^{z_j}$ 就是 logsumexp，框架（PyTorch `cross_entropy`、JAX `log_softmax`）都按 ln 实现，loss 单位因此是 nat。
 
-**为什么必须标底：同一个预测，读数不同。** 本节 CE 例题 $p_0 = 0.665$：$-\ln 0.665 = 0.408$ nat，$-\log_2 0.665 = 0.589$ bit，$-\log_{10} 0.665 = 0.177$。报告里的 loss 若不标单位就无法和别人比：Kaplan 等 [[scaling-laws]] 用 nats/token，压缩类基准（GPT-2 论文的 enwik8、text8）报 bits/byte、bits/char。困惑度 $e^{L_\text{nats}} = 2^{L_\text{bits}}$ 与底无关，可作为换算锚点，见 §11.6。
+**为什么必须标底：同一个预测，读数不同。** 本节 CE 例题 $p_0 = 0.665$：$-\ln 0.665 = 0.408$ nat，$-\log_2 0.665 = 0.589$ bit，$-\log_{10} 0.665 = 0.177$。报告里的 loss 若不标单位就无法和别人比：Kaplan 等 [[A4-scaling-laws]] 用 nats/token，压缩类基准（GPT-2 论文的 enwik8、text8）报 bits/byte、bits/char。困惑度 $e^{L_\text{nats}} = 2^{L_\text{bits}}$ 与底无关，可作为换算锚点，见 §11.6。
 
 ### 11.10 注意力头是不是就是 Q/K/V 向量（2026-10-11 追问）
 
@@ -542,7 +542,7 @@ step 3           step 4
                  [ s41 s42 s43 s44 ] ← 新增一行
 ```
 
-数量上每生成一个 token 整模型追加 $L \times H$ 行，每行长 $t$，与 §11.8 的推理记账一致。prompt 阶段是 prefill：一次算完 prompt 全部行并填好 cache，之后逐行追加。分数行含 $s_{tt}$（自己对自己），权重中"看自己"的项一般非零。相关：§11.10 head 与 Q/K/V 的区分，[[gpt-2-zero-shot]] 中 E1 的采样代码。
+数量上每生成一个 token 整模型追加 $L \times H$ 行，每行长 $t$，与 §11.8 的推理记账一致。prompt 阶段是 prefill：一次算完 prompt 全部行并填好 cache，之后逐行追加。分数行含 $s_{tt}$（自己对自己），权重中"看自己"的项一般非零。相关：§11.10 head 与 Q/K/V 的区分，[[A3-gpt-2-zero-shot]] 中 E1 的采样代码。
 
 ### 11.12 旧的分数行可以丢弃吗：推理状态只剩 KV cache（2026-10-11 追问）
 
@@ -559,7 +559,7 @@ step 3           step 4
 
 两个例外与推理无关：训练时 $[T,T]$ 矩阵需留给反向传播（FlashAttention 不物化、反向重算）；可解释性研究导出权重用于观测（HF `output_attentions`）。
 
-对照：丢旧行零代价且精确；"压缩 KV cache"（滑动窗口、attention sink、按重要性驱逐）丢的是 $K, V$ 本身，是有损近似，后续 token 看不到被丢位置。两者丢的对象不同。相关：§11.11 解码时的逐行追加，[[scaling-laws]] 的推理 FLOPs 记账。
+对照：丢旧行零代价且精确；"压缩 KV cache"（滑动窗口、attention sink、按重要性驱逐）丢的是 $K, V$ 本身，是有损近似，后续 token 看不到被丢位置。两者丢的对象不同。相关：§11.11 解码时的逐行追加，[[A4-scaling-laws]] 的推理 FLOPs 记账。
 
 ### 11.13 权重随输入变，怎么判定一个 head 的作用（2026-10-11 追问）
 
@@ -617,7 +617,7 @@ flowchart TB
   class C result
 ```
 
-提醒：多数 head 无干净描述（Voita 等：少数位置/句法/稀有词头，其余可剪）；head 分工由训练决定，换种子可能换 head 承担；以上均对开源权重（GPT-2）成立，OpenAI 闭源模型的 head 作用属 Unknown，不得从行为反推。可选实验：在 E3 的 GPT-2 四尺寸上加 head 探针，算上一个词分数与 induction 分数热力图，核对 Olsson 等"induction 头出现与 ICL 提升同步"的说法，见 [[gpt-3-in-context-learning]]。
+提醒：多数 head 无干净描述（Voita 等：少数位置/句法/稀有词头，其余可剪）；head 分工由训练决定，换种子可能换 head 承担；以上均对开源权重（GPT-2）成立，OpenAI 闭源模型的 head 作用属 Unknown，不得从行为反推。可选实验：在 E3 的 GPT-2 四尺寸上加 head 探针，算上一个词分数与 induction 分数热力图，核对 Olsson 等"induction 头出现与 ICL 提升同步"的说法，见 [[A5-gpt-3-in-context-learning]]。
 
 ## 最小示例或实验
 
@@ -644,7 +644,7 @@ flowchart TB
 - 2026-09-16 作业 correctness 2、algorithmic_mechanism 2 → mastery 保持 1；causal mask、softmax 权重、"一次前向 T 个预测"已掌握。softmax + CE 重做通过。
 - 2026-09-17 E1 第一阶段：自行填 causal mask 与交叉熵，4090 smoke 通过（初始 loss 4.22 ≈ ln 65）。
 - 自发总结出 §2.4 的"搬运 / 加工"图景，并追问到 LM head 的代价结构（§11.3），说明数据流层面已能自己推。
-- 2026-09-19 E1 第二阶段完成（记录在 [[sentiment-neuron-gpt-1]]）。
+- 2026-09-19 E1 第二阶段完成（记录在 [[A2-sentiment-neuron-gpt-1]]）。
 - 待完成：block 结构复测（第二档填空，原定 09-23，已逾期）。
 
 ## 待验证内容

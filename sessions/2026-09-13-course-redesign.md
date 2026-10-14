@@ -49,7 +49,7 @@
 - experiments/README.md（实验总表）
 - sources/official-sources.md（按 Track 分组、核验状态列、新增源头与非 OpenAI 参考）
 - sources/source-status.md（GPT-6 Astra、访问限制）
-- knowledge/ 重排为两级（index + 六个主线 MOC + 概念卡），status 移入 frontmatter；knowledge/README.md 写 Obsidian/mermaid/LaTeX 规范；knowledge/F-frontier/gpt-6-astra.md（新建）
+- knowledge/ 重排为两级（index + 六个主线 MOC + 概念卡），status 移入 frontmatter；knowledge/README.md 写 Obsidian/mermaid/LaTeX 规范；knowledge/F-frontier/F-gpt-6-astra.md（新建）
 - templates/knowledge-card.md 改为 Obsidian 格式；templates/knowledge-card-example.md 新建示范
 
 ## Canonical Knowledge Changes

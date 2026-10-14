@@ -1,6 +1,6 @@
 ---
 title: Scaling Laws 与其修正
-aliases: [Scaling Laws, 缩放定律, Kaplan 2020, predictable scaling, Chinchilla 对照]
+aliases: [Scaling Laws, 缩放定律, Kaplan 2020, predictable scaling, Chinchilla 对照, scaling-laws]
 track: A
 level: 2
 status: canonical
@@ -36,7 +36,7 @@ tags: [openai, track/A, status/canonical]
 
 ## 1. 承接的瓶颈
 
-上一代是 [[gpt-2-zero-shot]]。GPT-2 论文图 1 只有四个尺寸（117M → 1.5B），能看出"越大越好"，但四个点外推不了，也回答不了"算力有限时钱该花在参数上还是数据上"。要决定下一个模型的尺寸，需要一条跨多个数量级、可外推的曲线。
+上一代是 [[A3-gpt-2-zero-shot]]。GPT-2 论文图 1 只有四个尺寸（117M → 1.5B），能看出"越大越好"，但四个点外推不了，也回答不了"算力有限时钱该花在参数上还是数据上"。要决定下一个模型的尺寸，需要一条跨多个数量级、可外推的曲线。
 
 ## 2. 核心思想
 
@@ -85,7 +85,7 @@ flowchart TB
 
 ## 3. 目标函数与数据
 
-目标函数不变，仍是 [[transformer-decoder-next-token]] 的 next-token 交叉熵，单位 nats/token。数据 WebText2（约 230 亿 token），上下文 1024。论文的经验公式：
+目标函数不变，仍是 [[A1-transformer-decoder-next-token]] 的 next-token 交叉熵，单位 nats/token。数据 WebText2（约 230 亿 token），上下文 1024。论文的经验公式：
 
 $$
 L(N) = \left(\frac{N_c}{N}\right)^{\alpha_N},\qquad
@@ -123,7 +123,7 @@ $C \approx 6ND$：==每 token 前向 2N、反向 4N FLOPs==，推导与忽略项
 
 ## 5. 推理行为
 
-无新推理机制。附带发现：按位置看，上下文里越靠后的 token loss 越低，也是幂律。这是"条件越充分预测越准"的量化版，[[gpt-3-in-context-learning]] 建立在它上面。
+无新推理机制。附带发现：按位置看，上下文里越靠后的 token loss 越低，也是幂律。这是"条件越充分预测越准"的量化版，[[A5-gpt-3-in-context-learning]] 建立在它上面。
 
 ## 6. Scaling 维度
 
@@ -175,11 +175,11 @@ L(N, D) 的形状（论文常数画出，只看形状，绝对值不迁移）：
 
 ## 9. 后续影响
 
-- [[gpt-3-in-context-learning]]：175B 的尺寸按这条曲线外推选定；
+- [[A5-gpt-3-in-context-learning]]：175B 的尺寸按这条曲线外推选定；
 - GPT-4 的 predictable scaling 把幂律变成训练前的预算工具（[[gpt-4]]）；
 - Chinchilla 修正分配比例后，业界转向"小模型多数据"；
 - OpenAI 后续把幂律扩展到图像、视频、数学（Henighan 2020）和迁移学习（Hernandez 2021），两篇凭记忆写入，待核对；
-- 推理时算力的第二条 scaling 曲线是 [[o1-reasoning]] 的主题，那时"scaling"一词的对象从训练算力变成推理算力。
+- 推理时算力的第二条 scaling 曲线是 [[C2-o1-rl-on-cot]] 的主题，那时"scaling"一词的对象从训练算力变成推理算力。
 
 ### GPT-4 predictable scaling 流程
 
@@ -229,13 +229,13 @@ Chinchilla 把分歧主要归因于 Kaplan 的学习率计划没按 token 数调
 
 2. **排除之后，形状的影响消失，幂律才干净。** 论文图 6：按总参数画，不同层数的模型各成一条线，看起来"深度重要"；改按非 embedding 参数画，各种深度的点收敛到同一条线。也就是说"形状影响很小"这条推论（§6）本身依赖于这个计数约定。
 
-背后的机制是 embedding 层不做与参数量成比例的计算：输入 embedding 是查表，每个 token 只取 $V \times d$ 矩阵的一行，不是矩阵乘法；所以它对"每 token 算力"的贡献不是 2N，$C \approx 6ND$ 里的 N 也用非 embedding 参数。输出 unembedding 确实要做 $d \times V$ 的矩阵乘（[[transformer-decoder-next-token]] §11.3 讨论过大词表 LM head 的代价），论文把它一并排除，这在小模型加大词表时会低估算力，论文承认了这一点。
+背后的机制是 embedding 层不做与参数量成比例的计算：输入 embedding 是查表，每个 token 只取 $V \times d$ 矩阵的一行，不是矩阵乘法；所以它对"每 token 算力"的贡献不是 2N，$C \approx 6ND$ 里的 N 也用非 embedding 参数。输出 unembedding 确实要做 $d \times V$ 的矩阵乘（[[A1-transformer-decoder-next-token]] §11.3 讨论过大词表 LM head 的代价），论文把它一并排除，这在小模型加大词表时会低估算力，论文承认了这一点。
 
 对照：Chinchilla 计入了 embedding 参数，这是两篇常数不可直接比较的原因之一（§10）。E2 用字符级 65 词表，embedding 占比小，两种计法差别不大，但记录时按 train.py 打印的 non-embedding 数为准，与论文一致。
 
 ### 11.3 block 里具体哪部分让参数量与 d² 成正比（2026-09-19 追问）
 
-block 里所有的权重矩阵都是 $d \times d$ 或 $d \times 4d$，每个矩阵的元素数与 $d^2$ 成正比；LayerNorm 和 bias 只有 $d$ 个数，随 $d$ 线性长，可忽略。一层的账（对应 [[transformer-decoder-next-token]] 的 13 步）：
+block 里所有的权重矩阵都是 $d \times d$ 或 $d \times 4d$，每个矩阵的元素数与 $d^2$ 成正比；LayerNorm 和 bias 只有 $d$ 个数，随 $d$ 线性长，可忽略。一层的账（对应 [[A1-transformer-decoder-next-token]] 的 13 步）：
 
 | 子层 | 矩阵 | 形状 | 参数量 |
 |---|---|---|---|
@@ -293,7 +293,7 @@ flowchart TB
 2. **幂律的常数随方法移动。** Chinchilla 用同样算力得到更低 loss（§10）；MoE、数据配比、蒸馏都在改 $C_c$ 而不是 $\alpha_C$。历史上算法效率的提升速度不低于硬件，所以追赶方可以靠改常数而不是靠追算力。一个非 OpenAI 的公开例子：DeepSeek-V3 技术报告（2024-12，非 OpenAI）给出的训练开销约 2.8M H800 GPU 小时，说明系统与算法效率能把训到同一档 loss 所需的 C 压低一个量级。
 3. **蒸馏不在幂律里。** 追赶方可以用领先方模型的输出做训练数据，此时它付的 C 与领先方无关，幂律描述的是从头训练。
 4. **算力还买实验次数。** $L(C)$ 只算最后那次训练的算力。OpenAI 2026-09 的 research acceleration 文章（Public system behavior，见 `sources/source-status.md`）说明算力同时决定研究迭代速度，这部分优势是乘法关系，不受 $\alpha_C$ 约束。
-5. **推理时算力是第二条曲线。** [[o1-reasoning]] 之后，同一模型的表现还随推理算力按另一条幂律变化，算力优势在部署侧再算一次。
+5. **推理时算力是第二条曲线。** [[C2-o1-rl-on-cot]] 之后，同一模型的表现还随推理算力按另一条幂律变化，算力优势在部署侧再算一次。
 6. **数据是同样的瓶颈。** Chinchilla 说明 D 与 N 同等重要，图 3 的 L(N, D) 说明数据不够时算力再多也走平。
 
 结论：幂律支持"仅靠算力比值得到的 loss 领先很小、且扩大领先需要指数级投入"，不支持"算力优势不重要"。真正的差距更可能出现在幂律之外的四个地方：能力阈值、常数（算法效率）、实验次数、数据。
@@ -371,7 +371,7 @@ $S_{\min}$ 是 batch 无限大时的最少步数，$E_{\min}$ 是 batch 极小�
 是它的**工程作用**，但不是它**历史上最大的作用**。三层分开看：
 
 1. **预算工具**（§11.7）：给 C，得 L(C) 与 (N, D) 分配。这是论文被日常使用的方式，GPT-4 的 predictable scaling 是它的成熟形态。
-2. **战略判断**（历史影响最大）：论文证明 loss 是规模的平滑、可预测函数，跨七个数量级不断，而且形状、超参等架构细节的影响很小。这把"继续放大是否还有收益"从信念变成了有数据的判断，直接支撑了 GPT-3 把规模放大 100 倍的决定（§9、[[gpt-3-in-context-learning]]）。之后"scaling law"这个词在业界常被当作"规模假设"的代名词，指的就是这一层。
+2. **战略判断**（历史影响最大）：论文证明 loss 是规模的平滑、可预测函数，跨七个数量级不断，而且形状、超参等架构细节的影响很小。这把"继续放大是否还有收益"从信念变成了有数据的判断，直接支撑了 GPT-3 把规模放大 100 倍的决定（§9、[[A5-gpt-3-in-context-learning]]）。之后"scaling law"这个词在业界常被当作"规模假设"的代名词，指的就是这一层。
 3. **分析语言**：过拟合边界 $D \propto N^{0.74}$、大模型样本效率更高、临界 batch、训练早期 loss 随步数快速下降。这些给了讨论"为什么这次训练不如预期"的一套词汇，E1、E2 的解读用的就是它们。
 
 排序：论文发表时最重要的是第 2 层，今天日常最常用的是第 1 层，第 3 层贯穿始终。本课程考的因果链是第 2 层：它解决了 GPT-2 留下的"下一次该训多大"的问题，并把 GPT-3 变成一次可计算的下注。
@@ -411,7 +411,7 @@ $S_{\min}$ 是 batch 无限大时的最少步数，$E_{\min}$ 是 batch 极小�
 三个必须区分的点：
 
 1. **样本效率高不等于算力效率高。** 大模型每个 token 的算力是 6N，多得多。Kaplan 的结论是在他们的范围内，token 数的节省超过了每 token 成本的增加，所以算力最优解是大模型少数据（§6）；Chinchilla 认为这个优势被高估了（§10）。两篇都不否认样本效率本身。
-2. **样本效率高不等于小数据就够。** 它说的是"同一 loss 用更少 token"，不是"少量数据能训好大模型"。数据固定且很少时，大模型只是更快地记住训练集（E1 第二阶段 n=100 的结果，[[sentiment-neuron-gpt-1]]），图 3 的走平也是这一条。
+2. **样本效率高不等于小数据就够。** 它说的是"同一 loss 用更少 token"，不是"少量数据能训好大模型"。数据固定且很少时，大模型只是更快地记住训练集（E1 第二阶段 n=100 的结果，[[A2-sentiment-neuron-gpt-1]]），图 3 的走平也是这一条。
 3. **这是从头预训练的现象。** 微调阶段"大模型更省标注"是 GPT-1 论文的另一个观察，机制不同（预训练表征已含特征），不要混用。
 
 对 E2 的预期：s4（470 万参数）的 best_step 应早于 s3，epochs_at_best 更小，这是样本效率在 toy 尺度上的体现；但它的 best_val 未必更低，因为数据先成了瓶颈。
@@ -467,7 +467,7 @@ $$L = \underbrace{H(P)}_{\text{不可约：文本自身的熵}} + \underbrace{D_
 4. **难估**：$E$ 与指数同时拟合时相关性强，小算力范围估出的 $E$ 不稳定。
 5. **靠近下限不等于能力饱和**：loss 的小幅下降可能对应明显的能力差异，loss 与下游能力不是线性关系。
 
-与 [[transformer-decoder-next-token]] 的联系：不可约项就是 next-token 交叉熵目标在"模型完全等于真实分布"时的取值。
+与 [[A1-transformer-decoder-next-token]] 的联系：不可约项就是 next-token 交叉熵目标在"模型完全等于真实分布"时的取值。
 
 图解页：https://claude.ai/artifact/YEqy5DigiFqQ2VdCw5SyHG
 
@@ -521,7 +521,7 @@ $$
 
 ### 11.16 $\partial W_{ij} = x_i\,\partial y_j$ 如何推导（2026-09-24 追问）
 
-记号：$\partial y_j := \partial L/\partial y_j$，由后面的层传回（最顶层 softmax + 交叉熵处为 $p - \text{onehot}$，见 [[transformer-decoder-next-token]]）。
+记号：$\partial y_j := \partial L/\partial y_j$，由后面的层传回（最顶层 softmax + 交叉熵处为 $p - \text{onehot}$，见 [[A1-transformer-decoder-next-token]]）。
 
 **单个 token。** 正向 $y_k = \sum_i W_{ik} x_i + b_k$。$W_{ij}$ 只出现在 $y_j$ 的那一项里，所以
 

@@ -37,11 +37,11 @@ tags: [openai, track/C, moc]
 
 | # | 卡片 | 状态 | Mastery |
 |---|---|---|---|
-| C1 | [[process-vs-outcome-supervision]] | 未写 | 0 |
-| C2 | [[o1-rl-on-cot]] | 未写 | 0 |
-| C3 | [[test-time-compute]] | 未写 | 0 |
-| C4 | [[o3-tool-integrated-reasoning]] | 未写 | 0 |
-| C5 | [[gpt-5-unified-router]] | 未写 | 0 |
+| C1 | [[C1-process-vs-outcome-supervision]] | 未写 | 0 |
+| C2 | [[C2-o1-rl-on-cot]] | 未写 | 0 |
+| C3 | [[C3-test-time-compute]] | 未写 | 0 |
+| C4 | [[C4-o3-tool-integrated-reasoning]] | 未写 | 0 |
+| C5 | [[C5-gpt-5-unified-router]] | 未写 | 0 |
 
 ## 实验
 

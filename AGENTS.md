@@ -66,7 +66,7 @@
 - `timeline.md`
 - `inbox.md`
 - `state/`
-- `knowledge/<track>/<concept>.md`，最多两级：第 1 级是与文件夹同名的主线 MOC，第 2 级是概念卡；canonical/candidate 用 frontmatter 的 `status` 区分。规范见 `knowledge/README.md`
+- `knowledge/<track>/<node>-<concept>.md`（如 `A5-gpt-3-in-context-learning.md`），最多两级：第 1 级是与文件夹同名的主线 MOC，第 2 级是概念卡，文件名以课程节点编号开头；canonical/candidate 用 frontmatter 的 `status` 区分。规范见 `knowledge/README.md`
 - `knowledge/papers.md`：论文台账，每篇论文读到哪、哪张卡引用了它的什么。规则见 Knowledge Extraction 的「论文台账」
 - `sessions/`
 - `weekly-reviews/`
@@ -251,7 +251,7 @@
 
 ### Knowledge Extraction
 
-知识卡统一写入 `knowledge/<track>/<concept>.md`，用 `templates/knowledge-card.md`，格式规范以 `knowledge/README.md` 为准，示范见 `templates/knowledge-card-example.md`。
+知识卡统一写入 `knowledge/<track>/<node>-<concept>.md`（节点编号开头，如 `B3-instructgpt-chatgpt.md`），用 `templates/knowledge-card.md`，格式规范以 `knowledge/README.md` 为准，示范见 `templates/knowledge-card-example.md`。
 
 #### Canonical（`status: canonical`）
 

@@ -37,11 +37,11 @@ tags: [openai, track/A, moc]
 
 | #   | 卡片                                 | 状态        | Mastery |
 | --- | ---------------------------------- | --------- | ------- |
-| A1  | [[transformer-decoder-next-token]] | canonical | 1       |
-| A2  | [[sentiment-neuron-gpt-1]]         | canonical | 2       |
-| A3  | [[gpt-2-zero-shot]]                | canonical | 1       |
-| A4  | [[scaling-laws]]                   | canonical | 2       |
-| A5  | [[gpt-3-in-context-learning]]      | canonical | 1       |
+| A1  | [[A1-transformer-decoder-next-token]] | canonical | 1       |
+| A2  | [[A2-sentiment-neuron-gpt-1]]         | canonical | 2       |
+| A3  | [[A3-gpt-2-zero-shot]]                | canonical | 1       |
+| A4  | [[A4-scaling-laws]]                   | canonical | 2       |
+| A5  | [[A5-gpt-3-in-context-learning]]      | canonical | 1       |
 
 ## 实验
 

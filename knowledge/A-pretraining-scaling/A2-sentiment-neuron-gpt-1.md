@@ -1,6 +1,6 @@
 ---
 title: Sentiment Neuron 与 GPT-1：生成式预训练 + 判别式微调
-aliases: [GPT-1, Sentiment Neuron, 情感神经元, generative pre-training, pretrain + fine-tune, A2]
+aliases: [GPT-1, Sentiment Neuron, 情感神经元, generative pre-training, pretrain + fine-tune, A2, sentiment-neuron-gpt-1]
 track: A
 level: 2
 status: canonical
@@ -40,7 +40,7 @@ tags: [openai, track/A, status/canonical]
 
 ## 1. 承接的瓶颈
 
-上一代是 [[transformer-decoder-next-token]]，它给了一个能并行训练的 next-token 模型。但 2017 年有两个悬而未决的问题：
+上一代是 [[A1-transformer-decoder-next-token]]，它给了一个能并行训练的 next-token 模型。但 2017 年有两个悬而未决的问题：
 
 1. **无监督学到的表征里有没有语义？** 只预测下一个字符的模型，内部是否编码了"这条评论是正面还是负面"这类高层概念？没有证据前，没人敢把大量算力投在无标注文本上。
 2. **有了表征，怎么迁移到有标注的任务？** 当时 NLP 每个任务各设计一套结构，最多共享词向量（word2vec、GloVe，非 OpenAI），深层结构无法复用。
@@ -183,11 +183,11 @@ $$
 
 微调后模型不再生成文本。一次前向，取 `<e>` 位置的 768 维向量，过 $W_y$ 得类别 logits，argmax 即答案。多选是 K 次前向各得一个分数再 softmax。
 
-论文第 5 节"zero-shot behaviors"：不做微调，把任务改写成生成问题（情感分类在文本后接 "very"，比较 "positive" 与 "negative" 的概率），结果随预训练步数稳定上升，虽然远低于微调。这是 [[gpt-2-zero-shot]] 的种子。
+论文第 5 节"zero-shot behaviors"：不做微调，把任务改写成生成问题（情感分类在文本后接 "very"，比较 "positive" 与 "negative" 的概率），结果随预训练步数稳定上升，虽然远低于微调。这是 [[A3-gpt-2-zero-shot]] 的种子。
 
 ## 6. Scaling 维度
 
-论文做了"迁移层数"实验：把预训练的前 k 层搬到下游，其余随机初始化。每多搬一层都有提升，全搬 12 层总计约 9 个百分点，说明深层参数也在做有用的事。GPT-1 没有做模型尺寸 scaling，那是 [[gpt-2-zero-shot]] 与 [[scaling-laws]] 的内容。
+论文做了"迁移层数"实验：把预训练的前 k 层搬到下游，其余随机初始化。每多搬一层都有提升，全搬 12 层总计约 9 个百分点，说明深层参数也在做有用的事。GPT-1 没有做模型尺寸 scaling，那是 [[A3-gpt-2-zero-shot]] 与 [[A4-scaling-laws]] 的内容。
 
 ## 7. 证据
 
@@ -201,16 +201,16 @@ $$
 
 ## 8. 局限
 
-- 每个任务仍要一次微调，产出一个新模型副本，这是 [[gpt-2-zero-shot]] 要解决的瓶颈；
+- 每个任务仍要一次微调，产出一个新模型副本，这是 [[A3-gpt-2-zero-shot]] 要解决的瓶颈；
 - 输入拼法手工设计，新任务要重新设计；
 - 窗口 512，长文档要截断；
 - 数据只有 BooksCorpus，领域单一。
 
 ## 9. 后续影响
 
-- 直接产出 [[gpt-2-zero-shot]] 的 zero-shot 假说（论文第 5 节）；
+- 直接产出 [[A3-gpt-2-zero-shot]] 的 zero-shot 假说（论文第 5 节）；
 - "预训练 + 微调"成为 2018～2020 NLP 默认范式，BERT（非 OpenAI）同年用 encoder 走了同一条路；
-- [[instructgpt-chatgpt]] 的 SFT 阶段本质上仍是这个阶段二，只是 $W_y$ 换回 LM head。
+- [[B3-instructgpt-chatgpt]] 的 SFT 阶段本质上仍是这个阶段二，只是 $W_y$ 换回 LM head。
 
 ## 10. 与相关方法的区别
 

@@ -110,8 +110,10 @@ openai.com 对 curl、WebFetch 和内置浏览器返回 403，逐页打开需由
 | R-3 | DPO（2023） | B3 对照 | https://arxiv.org/abs/2305.18290 | 知识确认 |
 | R-4 | Self-Consistency（2022） | C3 对照 | https://arxiv.org/abs/2203.11171 | 知识确认 |
 | R-5 | µP / µTransfer，Tensor Programs V（2022，微软主导，OpenAI 合著；前作 Tensor Programs IV arXiv 2011.14522） | A5 §11.4 对照（lr 随宽度缩小的事后解释） | https://arxiv.org/abs/2203.03466 | 知识确认，作者名单待核对 |
+| R-6 | Are Emergent Abilities of LLMs a Mirage?（Schaeffer 等，2023） | A5 §11.12 对照（涌现与阈值指标） | https://arxiv.org/abs/2304.15004 | 知识确认 |
 | R-6 | A Mathematical Framework for Transformer Circuits（2021，Anthropic） | A5 §11.5 对照（两层 attention-only 模型里的 induction 电路，K-composition） | https://transformer-circuits.pub/2021/framework/index.html | 知识确认 |
 | R-7 | In-context Learning and Induction Heads（2022，Anthropic） | A5 §11.5 对照（ICL 机制假设、相变证据）；Semantic Scholar 2026-10-11 引用约 1,075，在 Anthropic LLM 论文里约第 8～9 位 | https://arxiv.org/abs/2209.11895 | 知识确认，引用数 API 取得 |
+| R-8 | Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks（Finn、Abbeel、Levine，2017） | A5 §11.15 对照（显式梯度式 meta-learning 与 ICL 的对照） | https://arxiv.org/abs/1703.03400 | 知识确认 |
 
 ## Rules
 

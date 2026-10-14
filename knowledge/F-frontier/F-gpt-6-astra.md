@@ -1,6 +1,6 @@
 ---
 title: GPT-6 Astra
-aliases: [Astra, GPT-6]
+aliases: [Astra, GPT-6, gpt-6-astra]
 track: F
 level: 2
 status: candidate
@@ -57,6 +57,6 @@ GPT-6 Astra 是 2026-08-01 之后发布的 OpenAI 最新 GPT 主线模型，官�
 
 ## 关联
 
-可能延续 [[gpt-5-unified-router]] 或 [[multi-agent-orchestration]]，待读 system card 后判断。
+可能延续 [[C5-gpt-5-unified-router]] 或 [[D5-multi-agent-orchestration]]，待读 system card 后判断。
 
 ← [[F-frontier]]

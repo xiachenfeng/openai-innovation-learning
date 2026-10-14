@@ -5,7 +5,7 @@ Last checked: 2026-09-19（限定 openai.com 域名的搜索；页面未打开�
 ## Current Public Frontier
 
 - Latest public GPT model: **GPT-6 Astra**（2026-09-03 发布，09-19 搜索核实日期；有 system card、safety overview 和 "Path to Astra" 文章；官方称首个达到 Preparedness Framework cybersecurity Critical 级别的模型）
-- 状态：未分类，已建 `knowledge/F-frontier/gpt-6-astra.md`
+- 状态：未分类，已建 `knowledge/F-frontier/F-gpt-6-astra.md`
 - 上一代：GPT-5.6 系列（Sol / Terra / Luna），已纳入 Track C、D
 - GPT-5.6 公开系统机制：max reasoning effort；ultra mode 用 subagents 并行 workstream；显式 prompt cache breakpoint
 - GPT-5.6 公开效率披露：load balancing、speculative decoding、caching、kernel optimization、harness 层减少 context bloat

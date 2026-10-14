@@ -39,9 +39,9 @@ sft.py 三处填空：correctness 4（含一次自我纠错）。
 
 ## New Knowledge
 
-- 新建 canonical 卡 [[gpt-2-zero-shot]]（十个 lens、三张图、两个追问）；
-- [[sentiment-neuron-gpt-1]] 新增 tip callout（"表征里已有特征，微调只是读出来"）、§11.1～11.3；
-- [[transformer-decoder-next-token]] §11.5（随机采样与重复）。
+- 新建 canonical 卡 [[A3-gpt-2-zero-shot]]（十个 lens、三张图、两个追问）；
+- [[A2-sentiment-neuron-gpt-1]] 新增 tip callout（"表征里已有特征，微调只是读出来"）、§11.1～11.3；
+- [[A1-transformer-decoder-next-token]] §11.5（随机采样与重复）。
 
 ## Mistakes and Gaps
 
@@ -55,7 +55,7 @@ Track A 结束时填。
 
 ## 图解产出
 
-- 教练图：A3 三张（fine-tune vs prompt、任务写进文本、四尺寸 scaling）写入 [[gpt-2-zero-shot]]，图板 https://claude.ai/artifact/GzWJbEhPea5v3HpWm5oLSS
+- 教练图：A3 三张（fine-tune vs prompt、任务写进文本、四尺寸 scaling）写入 [[A3-gpt-2-zero-shot]]，图板 https://claude.ai/artifact/GzWJbEhPea5v3HpWm5oLSS
 - 用户因果表转图：无
 - 复测填空：无
 
@@ -88,7 +88,7 @@ A2：2 → 3（实验完成并有记录）。A3：0（检查题未过线）。
 
 ## Files Updated
 
-- knowledge/A-pretraining-scaling/gpt-2-zero-shot.md（新建）、sentiment-neuron-gpt-1.md、transformer-decoder-next-token.md、A-pretraining-scaling.md
+- knowledge/A-pretraining-scaling/A3-gpt-2-zero-shot.md（新建）、A2-sentiment-neuron-gpt-1.md、A1-transformer-decoder-next-token.md、A-pretraining-scaling.md
 - state/answer-history.csv（+4 行）、mastery.md、review-queue.md、current.md
 - experiments/pretraining/E1-tiny-gpt.md、tiny_gpt/run_seeds.sh、experiments/sync.sh、.gitignore（已推送）
 - AGENTS.md

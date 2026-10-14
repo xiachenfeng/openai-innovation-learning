@@ -33,7 +33,7 @@ flowchart TB
 
 | # | 卡片 | 状态 | Mastery |
 |---|---|---|---|
-| S1 | [[multimodal-paradigms]] | 未写 | 0 |
-| S2 | [[gpt-live-full-duplex]] | 未写 | 0 |
+| S1 | [[S1-multimodal-paradigms]] | 未写 | 0 |
+| S2 | [[S2-gpt-live-full-duplex]] | 未写 | 0 |
 
 ← [[index]]

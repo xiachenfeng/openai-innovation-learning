@@ -20,7 +20,7 @@ Last verified: 2026-09-13
 | 2025 | CoT Monitoring / Codex agent loop & harness / Symphony | B, D | Monitorability；open agent loop；orchestration spec |
 | 2026 | GPT-5.4 / 5.5 / 5.6 (Sol, Terra, Luna) | C, D | Long-horizon work；token efficiency；max effort；ultra multi-agent |
 | 2026 | GPT-Red / GPT-Live | B, S | Self-play red teaming；full-duplex voice |
-| 2026 | GPT-6 Astra | F | 尚未分类，见 `knowledge/F-frontier/gpt-6-astra.md` |
+| 2026 | GPT-6 Astra | F | 尚未分类，见 `knowledge/F-frontier/F-gpt-6-astra.md` |
 
 Track 列：A = Pretraining & Scaling，B = Alignment，C = Reasoning，D = Agents & Systems，S = Survey，F = Frontier 待分类。
 

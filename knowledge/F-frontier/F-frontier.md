@@ -14,7 +14,7 @@ tags: [openai, track/F, moc]
 
 | 卡片 | 发布 | 状态 | 影响的主线 |
 |---|---|---|---|
-| [[gpt-6-astra]] | 2026-08 之后 | candidate，未读全文 | 待判断（C 或 D） |
+| [[F-gpt-6-astra]] | 2026-08 之后 | candidate，未读全文 | 待判断（C 或 D） |
 
 ## 已分类并入主线
 

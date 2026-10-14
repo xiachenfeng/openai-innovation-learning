@@ -38,11 +38,11 @@ tags: [openai, track/D, moc]
 
 | # | 卡片 | 状态 | Mastery |
 |---|---|---|---|
-| D1 | [[codex-2021-webgpt]] | 未写 | 0 |
-| D2 | [[function-calling-deep-research]] | 未写 | 0 |
-| D3 | [[codex-agent-loop-compaction]] | 未写 | 0 |
-| D4 | [[gpt-oss-architecture]] | 未写 | 0 |
-| D5 | [[multi-agent-orchestration]] | 未写 | 0 |
+| D1 | [[D1-codex-2021-webgpt]] | 未写 | 0 |
+| D2 | [[D2-function-calling-deep-research]] | 未写 | 0 |
+| D3 | [[D3-codex-agent-loop-compaction]] | 未写 | 0 |
+| D4 | [[D4-gpt-oss-architecture]] | 未写 | 0 |
+| D5 | [[D5-multi-agent-orchestration]] | 未写 | 0 |
 
 ## 实验
 

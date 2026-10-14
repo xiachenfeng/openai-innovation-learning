@@ -1,6 +1,6 @@
 ---
 title: GPT-3 与 In-context Learning
-aliases: [GPT-3, in-context learning, ICL, few-shot learning, 上下文学习, Language Models are Few-Shot Learners]
+aliases: [GPT-3, in-context learning, ICL, few-shot learning, 上下文学习, Language Models are Few-Shot Learners, gpt-3-in-context-learning]
 track: A
 level: 2
 status: canonical
@@ -22,22 +22,22 @@ tags: [openai, track/A, status/canonical]
 把任务示例直接写进输入文本，让一个足够大的预训练语言模型在不更新任何参数的情况下完成新任务；这种能力随模型规模增强，是 175B 参数的 GPT-3 论文（Brown 等，2020）的核心发现。
 
 > [!success] Public algorithm
-> 论文公开：8 个尺寸（125M → 175B）的层数、宽度、头数、batch、学习率；5 个数据源的 token 数、采样权重、训练中过几遍；总训练量 3000 亿 token；架构沿用 [[gpt-2-zero-shot]] 并把注意力改为 dense 与 locally banded sparse 交替；zero / one / few-shot 的评测协议（K 的取法、示例分隔、打分归一化、beam search 参数）；42 个基准的全部分数；数据污染分析。
+> 论文公开：8 个尺寸（125M → 175B）的层数、宽度、头数、batch、学习率；5 个数据源的 token 数、采样权重、训练中过几遍；总训练量 3000 亿 token；架构沿用 [[A3-gpt-2-zero-shot]] 并把注意力改为 dense 与 locally banded sparse 交替；zero / one / few-shot 的评测协议（K 的取法、示例分隔、打分归一化、beam search 参数）；42 个基准的全部分数；数据污染分析。
 
 > [!info] Public system behavior
 > 模型只通过 API 提供（2020-06 起），未放出权重。OpenAI 官方 GitHub 的 gpt-3 仓库只有论文附录里的数据污染统计和示例，没有训练或推理代码。
 
 > [!question] Inference
-> （1）175B 的尺寸与"只训 3000 亿 token"是按 [[scaling-laws]] 的 Kaplan 分配做的决定：论文引用 Kaplan 并说沿其趋势选尺寸，按 6·N·D 验算 3.14×10²³ FLOPs 也对得上；（2）few-shot 到底是推理时"学会"新任务还是"认出"预训练里见过的任务，论文自己说区分不了（§5），任何一边都不能写成结论。
+> （1）175B 的尺寸与"只训 3000 亿 token"是按 [[A4-scaling-laws]] 的 Kaplan 分配做的决定：论文引用 Kaplan 并说沿其趋势选尺寸，按 6·N·D 验算 3.14×10²³ FLOPs 也对得上；（2）few-shot 到底是推理时"学会"新任务还是"认出"预训练里见过的任务，论文自己说区分不了（§5），任何一边都不能写成结论。
 
 > [!danger] Unknown
 > 权重；训练代码与并行方案（只说用了 V100 集群与模型并行）；Common Crawl 过滤分类器与去重的具体实现；Books2 的来源；每个尺寸的训练 loss 曲线数值。
 
 ## 1. 承接的瓶颈
 
-上一代是 [[gpt-2-zero-shot]]：任务写进文本、不改参数就能做任务，但 zero-shot 的结果不稳定，任务格式要靠 prompt 去猜，多数基准远不及 fine-tune。要让结果稳定，当时的办法仍是 [[sentiment-neuron-gpt-1]] 式的 fine-tune，每个任务数千条标注、一份权重，并且 fine-tune 后的模型在分布外表现差，基准分数夸大了真实能力。
+上一代是 [[A3-gpt-2-zero-shot]]：任务写进文本、不改参数就能做任务，但 zero-shot 的结果不稳定，任务格式要靠 prompt 去猜，多数基准远不及 fine-tune。要让结果稳定，当时的办法仍是 [[A2-sentiment-neuron-gpt-1]] 式的 fine-tune，每个任务数千条标注、一份权重，并且 fine-tune 后的模型在分布外表现差，基准分数夸大了真实能力。
 
-同时 [[scaling-laws]] 给出了"算力给定时应把大部分预算花在参数上"的依据，也留下一个待验证的问题：loss 平滑下降，下游能力会跟着平滑上升吗？
+同时 [[A4-scaling-laws]] 给出了"算力给定时应把大部分预算花在参数上"的依据，也留下一个待验证的问题：loss 平滑下降，下游能力会跟着平滑上升吗？
 
 GPT-3 论文把这两条线接在一起：把 GPT-2 放大 100 倍，并把"给几个示例"这件事从梯度更新改成写进上下文。
 
@@ -70,7 +70,7 @@ flowchart TB
 
 ### 2.2 few-shot 的一次前向
 
-三段材料拼成一段文本：可选的任务描述、K 个从训练集随机抽的示例、要回答的查询。参数冻结，做一次前向。答案的读法沿用 [[gpt-2-zero-shot]] §2.3 的两种：生成式与打分式。
+三段材料拼成一段文本：可选的任务描述、K 个从训练集随机抽的示例、要回答的查询。参数冻结，做一次前向。答案的读法沿用 [[A3-gpt-2-zero-shot]] §2.3 的两种：生成式与打分式。
 
 ```mermaid
 %%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
@@ -159,7 +159,7 @@ flowchart TB
 
 ## 3. 目标函数与数据
 
-训练目标不变，仍是 [[transformer-decoder-next-token]] 的 next-token 交叉熵。论文没有为 ICL 引入任何新损失。新的是推理时的条件分布：
+训练目标不变，仍是 [[A1-transformer-decoder-next-token]] 的 next-token 交叉熵。论文没有为 ICL 引入任何新损失。新的是推理时的条件分布：
 
 $$
 \hat{y} \;=\; \arg\max_{y \in \mathcal{Y}}\; \log P_{\Theta}\bigl(y \,\big|\, d,\; x_1, y_1, \ldots, x_K, y_K,\; x\bigr)
@@ -212,7 +212,7 @@ $$
 | 13B | 40 | 5140 | 40 | 200 万 | 1.0×10⁻⁴ |
 | 175B | 96 | 12288 | 96 | 320 万 | 0.6×10⁻⁴ |
 
-上下文 2048。175B 算力约 3.14×10²³ FLOPs（3640 PF-days）。学习率随尺寸递减、batch 随尺寸递增，与 [[scaling-laws]] 的临界 batch 结论一致。学习率与 batch 两列凭记忆，待核对。两列为何反向变化见 §11.4。
+上下文 2048。175B 算力约 3.14×10²³ FLOPs（3640 PF-days）。学习率随尺寸递减、batch 随尺寸递增，与 [[A4-scaling-laws]] 的临界 batch 结论一致。学习率与 batch 两列凭记忆，待核对。两列为何反向变化见 §11.4。
 
 ## 5. 推理行为
 
@@ -224,7 +224,7 @@ $$
 
 ## 6. Scaling 维度
 
-论文图 1.2：42 个基准平均准确率对参数量作图，zero / one / few-shot 三条曲线都随 N 上升，few-shot 升得最快，差距在 175B 处最大。这意味着"从上下文里学"这件事本身随规模增强。图 3.1 把 [[scaling-laws]] 的 L(C) 曲线再延长两个数量级，175B 略偏离趋势线。
+论文图 1.2：42 个基准平均准确率对参数量作图，zero / one / few-shot 三条曲线都随 N 上升，few-shot 升得最快，差距在 175B 处最大。这意味着"从上下文里学"这件事本身随规模增强。图 3.1 把 [[A4-scaling-laws]] 的 L(C) 曲线再延长两个数量级，175B 略偏离趋势线。
 
 | 基准（175B） | zero-shot | one-shot | few-shot | 对照 |
 |---|---:|---:|---:|---|
@@ -253,7 +253,7 @@ $$
 
 - 若干任务明显弱：ANLI、部分阅读理解（RACE、QuAC）、WiC 低于随机；
 - 单向模型，不擅长需要回看和比较的任务，作者认为双向或去噪目标可能更好；
-- 预训练目标对每个 token 一视同仁，不区分重要与否，也没有"目标导向"的信号，这一条直接指向 [[instructgpt-chatgpt]]；
+- 预训练目标对每个 token 一视同仁，不区分重要与否，也没有"目标导向"的信号，这一条直接指向 [[B3-instructgpt-chatgpt]]；
 - 预训练样本效率极低，看过的文本远多于人一生所见；
 - 分不清 few-shot 是"学"还是"认"；
 - 175B 推理昂贵；不可解释；示例选择与顺序敏感；
@@ -263,11 +263,11 @@ E3 层面的局限：GPT-2 尺寸上 ICL 信号弱，示例顺序噪声可能与
 
 ## 9. 后续影响
 
-- 直接影响 [[instructgpt-chatgpt]]：GPT-3 需要精心设计的 prompt、会编造、不听指令，InstructGPT 用人类反馈对齐它；
-- [[codex-2021-webgpt]]：Codex 是 GPT-3 在代码上继续训练的结果，同一范式换语料；
+- 直接影响 [[B3-instructgpt-chatgpt]]：GPT-3 需要精心设计的 prompt、会编造、不听指令，InstructGPT 用人类反馈对齐它；
+- [[D1-codex-2021-webgpt]]：Codex 是 GPT-3 在代码上继续训练的结果，同一范式换语料；
 - prompt 成为产品接口：OpenAI API（2020-06）第一次把"不训练、只写 prompt"卖给开发者；
 - ICL 随规模增强的曲线后来被概括为"emergent abilities"讨论的起点（非 OpenAI 的后续综述，只作背景）；
-- 推理阶段"多给上下文就更强"的思路，在 [[o1-reasoning]] 那里变成"多给推理 token 就更强"，对象从示例换成模型自己生成的思考。
+- 推理阶段"多给上下文就更强"的思路，在 [[C2-o1-rl-on-cot]] 那里变成"多给推理 token 就更强"，对象从示例换成模型自己生成的思考。
 
 ## 10. 与相关方法的区别
 
@@ -280,7 +280,7 @@ E3 层面的局限：GPT-2 尺寸上 ICL 信号弱，示例顺序噪声可能与
 | 任务知识保留到下次 | 是 | 否 | 否 |
 | 主要弱点 | 过拟合窄分布、每任务一模型 | 格式靠猜、不稳定 | 上下文上限、示例敏感、不及 fine-tune SOTA |
 
-与 [[gpt-2-zero-shot]] §2.3 的"条件 × 读法"二维表的关系：zero / one / few-shot 是**条件**这一维上的三个取值，生成式 / 打分式是**读法**这一维；GPT-3 论文两维都用到了，且任意组合。
+与 [[A3-gpt-2-zero-shot]] §2.3 的"条件 × 读法"二维表的关系：zero / one / few-shot 是**条件**这一维上的三个取值，生成式 / 打分式是**读法**这一维；GPT-3 论文两维都用到了，且任意组合。
 
 ## 11. 追问与澄清
 
@@ -291,13 +291,13 @@ E3 层面的局限：GPT-2 尺寸上 ICL 信号弱，示例顺序噪声可能与
 两个边界：
 
 1. **词义变化。** GPT-3 之前，meta-learning 文献里的 few-shot / one-shot learning 一般指用少量样本做参数更新（MAML 一类）。GPT-3 论文重新定义了这个词，读其他论文时先确认指的是"少量样本 fine-tune"还是"上下文示例"。
-2. **参数不变，激活值变。** 示例信息进入的是每一层注意力的 K、V；查询位置通过注意力读到示例里的模式，输出因此改变。前向结束这些激活值就丢弃，下一个查询要重新给示例。这是 §2.3 图里"任务信息只活在这次前向里"的含义，也是与 [[sentiment-neuron-gpt-1]] 的 fine-tune（写进权重、永久生效）的本质区别。
+2. **参数不变，激活值变。** 示例信息进入的是每一层注意力的 K、V；查询位置通过注意力读到示例里的模式，输出因此改变。前向结束这些激活值就丢弃，下一个查询要重新给示例。这是 §2.3 图里"任务信息只活在这次前向里"的含义，也是与 [[A2-sentiment-neuron-gpt-1]] 的 fine-tune（写进权重、永久生效）的本质区别。
 
 一句话：三种条件改的是输入，fine-tune 改的是权重。
 
 ### 11.2 n-shot 是靠注意力"激活输出范式"吗（2026-10-01 追问）
 
-**通道层：是架构事实。** 示例与查询在同一段文本里，模型中唯一跨位置搬信息的操作是注意力加权求和（[[transformer-decoder-next-token]] 步 7）。示例 token 在每层算出 K、V，查询位置用 Q 去选去读，结果写进查询位置的残差流，逐层累积后改变末位 logits。参数不变，MLP 逐 token，没有别的路径。
+**通道层：是架构事实。** 示例与查询在同一段文本里，模型中唯一跨位置搬信息的操作是注意力加权求和（[[A1-transformer-decoder-next-token]] 步 7）。示例 token 在每层算出 K、V，查询位置用 Q 去选去读，结果写进查询位置的残差流，逐层累积后改变末位 logits。参数不变，MLP 逐 token，没有别的路径。
 
 **内容层：示例激活了什么，三个候选，证据强弱不同。**
 
@@ -343,7 +343,7 @@ E3 可测：加"示例标签随机打乱"的 K = 8 对照。准确率与正常�
 
 - **in-context**：任务信息放在输入文本里，不在权重里；
 - **learning**：模型在一次前向里识别前文的模式并续写（如 `sea otter → loutre de mer ⏎ cheese →` 续写 fromage），没有为该任务做过梯度更新；
-- **不更新参数**：与 [[sentiment-neuron-gpt-1]] 的 fine-tune 的本质区别，任务只存在于这次前向的注意力激活值里（§11.1、§11.2）。
+- **不更新参数**：与 [[A2-sentiment-neuron-gpt-1]] 的 fine-tune 的本质区别，任务只存在于这次前向的注意力激活值里（§11.1、§11.2）。
 
 zero / one / few-shot 是 ICL 按示例数分的三档条件。重要性：把"换任务"从"重新训练"变成"换一段 prompt"，是 OpenAI API 与 prompt 工程的起点；示例带来的提升随规模变大（§6）是论文的核心证据。
 
@@ -358,7 +358,7 @@ zero / one / few-shot 是 ICL 按示例数分的三档条件。重要性：把"�
 | 13B | 5140 | 200 万 | 1.0×10⁻⁴ | 15 万 |
 | 175B | 12288 | 320 万 | 0.6×10⁻⁴ | 9.4 万 |
 
-**batch 递增：模型大 → loss 低 → 梯度噪声尺度大 → 临界 batch 大。** McCandlish 等 2018（OpenAI）：梯度噪声尺度衡量把梯度估准所需的样本数；batch 低于它时翻倍 batch ≈ 步数减半，高于它则多出的 token 白算。Kaplan 2020 拟成只依赖 loss 的函数（[[scaling-laws]] §11.6）：
+**batch 递增：模型大 → loss 低 → 梯度噪声尺度大 → 临界 batch 大。** McCandlish 等 2018（OpenAI）：梯度噪声尺度衡量把梯度估准所需的样本数；batch 低于它时翻倍 batch ≈ 步数减半，高于它则多出的 token 白算。Kaplan 2020 拟成只依赖 loss 的函数（[[A4-scaling-laws]] §11.6）：
 
 $$
 B_{\text{crit}}(L) = \frac{B^*}{L^{1/\alpha_B}},\qquad B^* \approx 2\times10^{8}\ \text{tokens},\ \alpha_B \approx 0.21
@@ -479,17 +479,17 @@ flowchart TB
 
 **术语层：通常不叫 ICL，叫 retrieval-augmented / grounded generation。** 区别在上下文里放的东西：GPT-3 的 ICL 放的是任务示范（x → y 对，教"怎么做"），检索放的是证据（事实片段，教"现在什么是真的"）。两者共用"上下文条件化"这一能力，是近亲，但 GPT-3 论文的 in-context learning 专指前者。
 
-**"梳理和利用"发生在哪。** 没有推理阶段的模型里，梳理是隐式的：每生成一个 token 都重新对全部检索片段做一次注意力，比较、取舍都在激活值里完成，看不见。推理模型（[[o1-reasoning]]）里梳理变成显式的：模型先生成中间 token 去摘录、比对、排除矛盾的片段，再写答案，这部分是 Track C 的内容。
+**"梳理和利用"发生在哪。** 没有推理阶段的模型里，梳理是隐式的：每生成一个 token 都重新对全部检索片段做一次注意力，比较、取舍都在激活值里完成，看不见。推理模型（[[C2-o1-rl-on-cot]]）里梳理变成显式的：模型先生成中间 token 去摘录、比对、排除矛盾的片段，再写答案，这部分是 Track C 的内容。
 
 **与 GPT-3 few-shot 的三点不同。**
 
 | 维度 | GPT-3 few-shot | 联网 chat |
 |---|---|---|
 | 上下文内容 | 任务示范 | 证据片段 |
-| 谁组装上下文 | 用户手写 prompt | 模型自己发出搜索调用，系统把结果写回上下文（tool calling，[[function-calling-deep-research]]） |
+| 谁组装上下文 | 用户手写 prompt | 模型自己发出搜索调用，系统把结果写回上下文（tool calling，[[D2-function-calling-deep-research]]） |
 | 能力来源 | 预训练副产物，未针对训练 | 经过 SFT / RL 后训练，学会用检索结果并引用 |
 
-**OpenAI 的公开脉络（Public system behavior）。** [[codex-2021-webgpt]]（2021）：GPT-3 微调后操作文本浏览器，发搜索、点链接、摘引文，引文进入上下文后写带引用的答案，用模仿学习加 RM/RL 训练；ChatGPT search 与 Responses API 的 web_search 工具：搜索结果作为工具输出进入上下文，模型引用来源；Deep Research（2025）：多步检索与推理交替。检索结果如何排序、截断、重排，内部实现 Unknown。
+**OpenAI 的公开脉络（Public system behavior）。** [[D1-codex-2021-webgpt]]（2021）：GPT-3 微调后操作文本浏览器，发搜索、点链接、摘引文，引文进入上下文后写带引用的答案，用模仿学习加 RM/RL 训练；ChatGPT search 与 Responses API 的 web_search 工具：搜索结果作为工具输出进入上下文，模型引用来源；Deep Research（2025）：多步检索与推理交替。检索结果如何排序、截断、重排，内部实现 Unknown。
 
 **仍会出错的地方。** 模型可以忽略或误读检索片段，引用不等于正确；长上下文里中间位置的内容利用率低（"lost in the middle"，非 OpenAI，Liu 等 2023）。
 
@@ -510,16 +510,177 @@ sequenceDiagram
 
 **按 GPT-3 论文的用法，算。** 论文把 zero / one / few-shot 都称为 in-context learning 的三种条件：模型都靠上下文判断当前任务，K = 0 时上下文只有自然语言指令。**按后来文献的习惯，不算。** ICL 多被收窄为"上下文里有示例"的 few-shot；没有示例的直接提问叫 zero-shot prompting 或 instruction following（指令遵循）。两种用法都存在，写作时说明取哪种即可。
 
-| 你做的事 | 常用术语 | 机制 |
-|---|---|---|
-| 直接提问，不给例子 | zero-shot prompting / instruction following | 上下文条件化；按指令行事的能力来自后训练（SFT + RLHF，[[instructgpt-chatgpt]]），不是预训练副产物 |
-| 消息里贴几个例子 | few-shot prompting，即狭义 ICL | 示例进上下文，§2.2 |
-| 多轮对话 | 对话历史即上下文；"记忆"只是 context / KV cache | 参数不变，§11.1 |
-| system prompt | 前置的条件文本 | 同上 |
-| 让它搜索、读文件 | RAG / tool use | §11.7 |
-| 以上总称 | prompting；广义的 in-context（与 in-weights 相对） | 任务信息走激活值而非权重 |
+| 你做的事          | 常用术语                                        | 机制                                                                |
+| ------------- | ------------------------------------------- | ----------------------------------------------------------------- |
+| 直接提问，不给例子     | zero-shot prompting / instruction following | 上下文条件化；按指令行事的能力来自后训练（SFT + RLHF，[[B3-instructgpt-chatgpt]]），不是预训练副产物 |
+| 消息里贴几个例子      | few-shot prompting，即狭义 ICL                  | 示例进上下文，§2.2                                                       |
+| 多轮对话          | 对话历史即上下文；"记忆"只是 context / KV cache          | 参数不变，§11.1                                                        |
+| system prompt | 前置的条件文本                                     | 同上                                                                |
+| 让它搜索、读文件      | RAG / tool use                              | §11.7                                                             |
+| 以上总称          | prompting；广义的 in-context（与 in-weights 相对）   | 任务信息走激活值而非权重                                                      |
 
-与 GPT-3 的因果连接：GPT-3 base 的 zero-shot 不稳定，所以论文主推 few-shot；[[instructgpt-chatgpt]] 的目标正是让 zero-shot 指令直接可用，这是 B3 要讲的瓶颈。今天和 Claude 对话默认是 zero-shot 指令遵循，贴例子时才回到狭义 ICL。"in-context vs in-weights learning"这对术语来自非 OpenAI 文献（Chan 等 2022，DeepMind），只作参考。
+与 GPT-3 的因果连接：GPT-3 base 的 zero-shot 不稳定，所以论文主推 few-shot；[[B3-instructgpt-chatgpt]] 的目标正是让 zero-shot 指令直接可用，这是 B3 要讲的瓶颈。今天和 Claude 对话默认是 zero-shot 指令遵循，贴例子时才回到狭义 ICL。"in-context vs in-weights learning"这对术语来自非 OpenAI 文献（Chan 等 2022，DeepMind），只作参考。
+
+### 11.9 GPT-1 / GPT-2 / GPT-3 的模型区别（2026-10-11 追问，ELI5）
+
+**结构几乎没变，变的是三件事：脑子大小、读的书、怎么让它干活。** 三代都是 Transformer decoder + next-token 预训练；第三件事才是每代论文的核心贡献。
+
+| | [[A2-sentiment-neuron-gpt-1\|GPT-1]]（2018） | [[A3-gpt-2-zero-shot\|GPT-2]]（2019） | GPT-3（2020） |
+|---|---|---|---|
+| 参数 | 1.17 亿 | 15 亿（4 个尺寸） | 1750 亿（8 个尺寸） |
+| 层 / 宽 / 上下文 | 12 / 768 / 512 | 48 / 1600 / 1024 | 96 / 12288 / 2048 |
+| 数据 | BooksCorpus 约 7000 本书 | WebText 约 800 万网页、40 GB | 过滤 Common Crawl + WebText2 + Books1/2 + Wikipedia，训 3000 亿 token |
+| 结构小改 | post-LN decoder | pre-LN、残差初始化缩放、字节级 BPE | 同 GPT-2，加交替的 dense / locally banded sparse attention |
+| 怎么用 | 每任务微调，加一个 $W_y$ | 不微调，prompt 即任务说明（zero-shot） | 不微调，上下文里给示例（few-shot ICL） |
+| 公开 | 论文 + 代码 + 权重 | 论文 + 代码 + 权重，分四次放出 | 论文公开，权重不公开，只有 API |
+
+ELI5 版本："同一个学生的三个年纪"。GPT-1 学了还要补课（每个任务重训一次，多一份权重）；GPT-2 学了听得懂一句话（任务写进文本，参数不动）；GPT-3 学了看几个例子就会（示例进上下文，只在这一次前向里起作用）。"越大越不用教"是 GPT-3 论文的主要发现：示例带来的增益随尺寸变宽（图 1.2）。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  A["GPT-1 · 1.2 亿<br/>预训练 + 每任务微调"]
+  B["GPT-2 · 15 亿<br/>不微调，prompt 即任务"]
+  C["GPT-3 · 1750 亿<br/>不微调，上下文给示例"]
+  A -->|"每任务一份权重<br/>小数据微调靠不住"| B
+  B -->|"zero-shot 不稳定<br/>格式要靠猜"| C
+  classDef gen fill:#E6DDF2,stroke:#6A4C93,color:#1E2A2B
+  class A,B,C gen
+```
+
+图板：https://claude.ai/artifact/BbXMezmJyrEVJuUiyuXUmG（六张图：脑子大小、数据量、三种用法对比、尺寸与 ICL 增益示意、参数表、三句话）。
+
+### 11.10 SST-2 是什么（2026-10-11 追问）
+
+Stanford Sentiment Treebank 二分类版（Socher 等 2013，斯坦福，非 OpenAI）。Rotten Tomatoes 影评单句约 1.1 万条，每句句法树上的每个短语都有情感标注（treebank 由此得名）；SST-5 五档，SST-2 去掉中性合并为正 / 负。GLUE 版训练集约 6.7 万条（含短语）、验证集 872 句、测试集 1821 句。课程里已出现两次：[[A2-sentiment-neuron-gpt-1]] §7 的线性探针结果与 GPT-1 表 4。E3 选它的原因：与 A2 同一任务，对比"微调读出"与"示例读出"；句子短，8-shot 放得进 GPT-2 的 1024 上下文；两个标签各为单 token，打分式一次前向即可。
+
+### 11.11 E3 里 GPT-2 的结构在哪定义（2026-10-11 追问）
+
+E3 不定义模型，`load_model` 用 Hugging Face `transformers` 的 `GPT2LMHeadModel` 与 `GPT2TokenizerFast`，权重从 Hub 的 `gpt2 / gpt2-medium / gpt2-large / gpt2-xl` 下载。三层来源：官方定义是 github.com/openai/gpt-2 的 `src/model.py`（TensorFlow）；实际运行的是 `transformers/models/gpt2/modeling_gpt2.py` 的 PyTorch 移植（`GPT2Attention`、`GPT2MLP`、`GPT2Block`、`GPT2Model`、`GPT2LMHeadModel`，配置在 `GPT2Config`）；权重是 OpenAI 2019 放出的官方 checkpoint 转换而来。
+
+结构与 E1 `model.py` 逐层对应（[[A1-transformer-decoder-next-token]] 图 2）：
+
+| E1 | HF GPT-2 | 差别 |
+|---|---|---|
+| `wte`、`wpe` | `wte`、`wpe` | 词表 65 → 50257 字节级 BPE；T_max 128 → 1024 |
+| `Block(ln_1, attn, ln_2, mlp)` pre-LN | `GPT2Block` | 一致 |
+| `qkv = Linear(d, 3d)` | `c_attn = Conv1D(3d, d)` | 同一运算，OpenAI 原版命名，权重存成转置 |
+| `F.gelu` | `gelu_new`（tanh 近似） | 数值几乎相同 |
+| `lm_head.weight = wte.weight` | `tie_word_embeddings=True` | 相同 |
+| dropout 0 | 0.1，推理时关闭 | E3 只推理 |
+
+四尺寸：12/768/12（1.24 亿）、24/1024/16（3.55 亿）、36/1280/20（7.74 亿）、48/1600/25（15.6 亿），d_k 均 64，上下文 1024，故 K ≤ 8。E3 用到三处：`model(**enc).logits` 取末位两个标签 token 的 logit（打分式）；`model.generate` 贪心 4 个 token（加法，生成式）；`tok.encode(" positive")` 确认标签为单 token。
+
+### 11.12 结构相同的三代 GPT 为何本领不同（2026-10-11 追问）
+
+本领 = **学到的分布精度 × 读出方式**，三代的差别在这两个因子，不在结构。
+
+**学到的是同一件事。** 三代目标都是 next-token，学的都是 P(下一个 token ∣ 前文)。两个变量决定学到什么、学多准：数据广度决定能学到哪些任务（next-token 只能学语料里出现过的模式；[[A3-gpt-2-zero-shot]] §2 展示 WebText 自然含翻译对，BooksCorpus 没有）；规模决定逼近精度（[[A4-scaling-laws]]：同结构同目标下 loss 随 N、D、C 幂律下降，稀疏规律随 loss 降低逐步被建模；E2 四尺寸同一代码 loss 单调下降）。
+
+**读出方式从改权重变成写文本。** GPT-1 117M 的 zero-shot 太弱故需 fine-tune（[[A2-sentiment-neuron-gpt-1]]）；GPT-2 够准到任务描述写进文本即可读出一部分；GPT-3 连示例也能从上下文读进去。能力在前一代已萌芽：GPT-1 论文 §5 的 zero-shot 实验随预训练稳步上升；GPT-3 的 few-shot 在 GPT-2 尺寸上也有但弱（E3 所测）。不是 GPT-3 发明了 ICL，是规模让它跨过可用门槛。
+
+**量变为何像质变（均为 Inference）。** 公开证据只到现象：loss 平滑（Kaplan）、平均分数平滑（图 1.2）、个别任务陡变（算术，图 3.10）、先降后升（GPT-4 报告 hindsight neglect）。三条候选解释：(1) 容量分配，loss 是全 token 平均，稀疏规律要等容量有富余才被学到，某些电路有最小尺寸（§11.5 induction head 至少两层）；(2) 指标非线性，精确匹配是阈值函数，每 token 概率平滑上升时"全对"概率陡升，一部分涌现是打分方式的假象（Schaeffer 等 2023，非 OpenAI 对照）；(3) 上下文 512 → 1024 → 2048 决定 K 上限，是 few-shot 的硬条件。pre-LN、初始化缩放、稀疏注意力是"大模型训得稳"的工程条件，不是本领来源。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  ARCH["同一结构 + 同一目标<br/>decoder，next-token"]:::model
+  DATA[("数据广度<br/>小说 → 网页 → CC+书+Wiki")]:::data
+  SCALE["规模 N、D、C<br/>1 亿 → 15 亿 → 1750 亿"]:::data
+  DIST["学到的东西：<br/>P(下一个 token ∣ 前文) 的精度"]:::loss
+  READ["读出方式<br/>fine-tune → prompt → 示例"]:::frozen
+  CAP["表现出的本领<br/>微调任务 → zero-shot → few-shot"]:::data
+  ARCH --> DIST
+  DATA -->|"决定能学到哪些任务"| DIST
+  SCALE -->|"决定学得多准（幂律）"| DIST
+  DIST -->|"精度够了才读得出"| READ
+  READ --> CAP
+  DIST -.->|"阈值指标让平滑变陡（Inference）"| CAP
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+### 11.13 GPT-2 不需要示例、GPT-3 需要，是不是 GPT-2 的方式更强（2026-10-11 追问）
+
+方向反了。(1) GPT-3 三种条件都能用，zero-shot 已全面超过 GPT-2：LAMBADA 63.2（GPT-2 1.5B）→ 76.2（GPT-3 zero）→ 86.4（few）；Natural Questions 4.1 → 14.6 → 29.9；法译英 BLEU 11.5 → 21.2 → 39.2（凭记忆待核对）。GPT-3 的输入方式是 GPT-2 的超集，示例是可选增益。(2) GPT-2 的 zero-shot 是存在性证明而非可用水平（[[A3-gpt-2-zero-shot]] §7：摘要略高于随机三句、英译法 5 BLEU、开放问答 4%）。(3) "需不需要示例"是接口不是能力：GPT-2 zero-shot 也依赖 "TL;DR:" 这类恰好在 WebText 里出现的格式且极敏感；示例的主要作用是把任务与格式说明白（§11.2 假设 1），给有能力的模型更多信息只会更好（one-shot 偶尔误导格式是例外）。直觉里对的一半：zero-shot 指令是更理想的接口，但实现它的是 [[B3-instructgpt-chatgpt]] 的后训练（§11.8），不是回到 GPT-2；GPT-3 的 few-shot 是 base 模型 zero-shot 不可靠时的权宜办法。
+
+**"再给示例又涨一截"的经典例子：LAMBADA（论文 §3.1.2）。** 补段落最后一个词，175B：zero 76.2 → one 72.5 → few 86.4（此前 SOTA 68.0）。zero-shot 时模型的概率摊在所有合理续写上（接词、接短语、标点换行、新句），评测只认"恰好一个词"；损失不在"会不会预测那个词"，而在"不知道题目要一个词然后停"。few-shot 用 LAMBADA 的填空格式（`Alice was friends with Bob. Alice went to visit her friend ____. → Bob`）把概率集中到"填一个词、立即结束"的答案空间。涨的不是新知识，是消除任务说明的歧义，把模型本来会的事与评测打分的事对齐，这是 §11.2 假设 1 的直接证据，论文自己也这样解释。旁证：one-shot 低于 zero-shot，一条示例不够认出填空模式反而引入陌生格式；小模型 few-shot 几乎不涨（图 3.2），识别并沿用示例格式本身需要规模。
+
+**反例：TriviaQA** 64.3 → 68.0 → 71.2 只涨 7 分，瓶颈是知识，示例塞不进知识，只能对齐 "Q: … A:" 格式。示例能涨多少 = zero-shot 损失里格式错位的份额；能力不足的份额只能靠规模。两位数加法同理：zero 76.9 → one 99.6 → few 100，格式钉死后剩下的全是模型本来就会的（数字凭记忆待核对）。
+
+### 11.14 Treebank 样本长什么样（2026-10-12 追问）
+
+SST 原始格式是 PTB 风格的带标签括号树：每对括号一个节点，括号后的数字是该节点的情感标签（0 很负面、1 负面、2 中性、3 正面、4 很正面），叶子是词。构造的短例（格式与标签规则照原数据）：
+
+```text
+(1 (2 (2 The) (2 movie)) (1 (2 is) (1 (2 not) (3 (2 very) (3 good)))) (2 .))
+```
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 18, "rankSpacing": 20, "padding": 8}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  R["1 · The movie is not very good ."]:::loss
+  A["2 · The movie"]:::frozen
+  B["1 · is not very good"]:::loss
+  P["2 · ."]:::frozen
+  C["2 · is"]:::frozen
+  D["1 · not very good"]:::loss
+  E["2 · not"]:::frozen
+  F["3 · very good"]:::human
+  G["2 · very"]:::frozen
+  H["3 · good"]:::human
+  R --> A
+  R --> B
+  R --> P
+  B --> C
+  B --> D
+  D --> E
+  D -->|"否定把 3 翻成 1"| F
+  F --> G
+  F --> H
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+每个短语节点都有标签，所以能看到 good = 3、very good = 3、not very good = 1，否定与组合逐层改变情感。Socher 2013 的招牌例子 "This film does n't care about cleverness , wit or any other kind of intelligent humor ." 整句负面而内部短语正面，只有句级标签的数据集学不到这种结构，这是递归神经网络的动机。
+
+SST-2 的来历：只取根标签，去掉 2，0/1 → negative，3/4 → positive；GLUE 版训练集把短语节点也当样本（6.7 万条），验证与测试只用整句。E3 读到的是摊平的两列（凭记忆待核对）：训练集第一条 "hide new secretions from the parental units" / 0（是个短语）；验证集第一条 "it 's a charming and often affecting journey ." / 1。"it 's"、"does n't"、标点前空格是 PTB 分词痕迹，prompt 原样使用，GPT-2 BPE 可处理。
+
+### 11.15 MAML 是什么（2026-10-13 追问，ELI5）
+
+**结论。** MAML（Model-Agnostic Meta-Learning，Finn、Abbeel、Levine，ICML 2017，非 OpenAI 对照论文）学的不是某个任务的解，而是一个**初始化** $\theta$：从它出发，对任何新任务只用少量样本走一两步梯度就能表现好。它和本卡 §2.1 的 meta-learning 类比是同一个"学会怎么学"目标的两种实现：MAML 的内循环是**显式梯度步、权重真的改**，GPT-3 的内循环是**前向推理、权重不动**。
+
+**机制（两层循环）。**
+
+- 内循环：对任务 $\mathcal T_i$，用 support 集走一步（或几步）梯度，$\theta_i' = \theta - \alpha\nabla_\theta \mathcal L_{\mathcal T_i}(f_\theta)$。
+- 外循环：用同一任务的 query 集评价**适应后**的参数，再把损失传回初始化：$\theta \leftarrow \theta - \beta\nabla_\theta \sum_i \mathcal L_{\mathcal T_i}(f_{\theta_i'})$。
+- 关键在外循环求导穿过了内循环（二阶项），优化的是"练完之后好不好"而不是"$\theta$ 本身好不好"。论文的 first-order 近似丢掉二阶项以省算力。
+- "model-agnostic"指它只改初始化，不改结构，任何靠梯度训练的模型（论文试了分类、回归、RL 策略）都能套。
+
+| 记号 | 含义 | 对应步骤 |
+|---|---|---|
+| `θ` | 跨任务共享的初始化 | 外循环更新对象 |
+| `θ'_i` | 对任务 i 适应后的参数 | 内循环输出 |
+| `α`、`β` | 内、外循环学习率 | 内 / 外循环 |
+| `support / query` | 任务内用于适应 / 用于评价的样本 | 内 / 外循环 |
+
+**与 GPT-3 的对照（本卡 §9 第 1 点的展开）。** GPT-3 论文借 meta-learning 的词描述 ICL，但训练目标始终只有 next-token 交叉熵，没有 MAML 式的任务抽样与二阶优化；few-shot 在 MAML 语境里意味着参数更新，在 GPT-3 语境里意味着上下文示例。读到"few-shot"先确认是哪一种。图解见 2026-10-13 的 ELI5 图板（八张图：随机起点→重来→好起点→练/考/挪循环→"看练完之后"→model-agnostic→使用→与 GPT-3 对照）。
+
+**补充：和普通训练的区别到底在哪（2026-10-13 追问）。** 学习者的概括"普通训练对 $\theta$ 直接求导；MAML 先练几步得到 $\theta'$，看 $\theta'$ 好不好，再改 $\theta$"是对的，但要补三点，否则会把 MAML 误解成"多练了几步"：
+
+1. 评价 $\theta'$ 用的是 query 集，练那几步用的是 support 集，两批数据不同。同一批数据只能量"背没背住"，量不出"学得快不快"。
+2. 外循环梯度对 $\theta$ 求，并且穿过内循环。一步内循环时 $\theta' = \theta - \alpha\nabla\mathcal L_{\text{sup}}(\theta)$，于是
+   $$\frac{d\mathcal L_{\text{qry}}(\theta')}{d\theta} = \nabla\mathcal L_{\text{qry}}(\theta')\,\big(I - \alpha\nabla^2\mathcal L_{\text{sup}}(\theta)\big)$$
+   括号里的 Hessian 项是"$\theta$ 动一点，练出来的 $\theta'$ 会跟着怎么动"，这才是对学习过程求导。First-order MAML 把括号近似成 $I$，退化为"在 $\theta'$ 处算梯度直接加到 $\theta$ 上"。
+3. 每轮外循环抽一批任务，各算各的 $\theta'_i$ 与 query 损失，梯度求和后改一次 $\theta$，所以 $\theta$ 被推向"离所有任务都近"而不是偏向某一个。
+
+"练 2 步"是 ELI5 图板的简化；论文推导按一步写，实验内循环 1～10 步。
 
 ## 最小示例或实验
 
@@ -531,11 +692,12 @@ E3（`experiments/in-context-learning/`）：GPT-2 四个开源尺寸（124M →
 - "ICL 是 GPT-3 新训出来的能力"：训练目标与 GPT-2 相同，ICL 是预训练的副产物，规模让它变得可用；
 - "zero-shot 一定比 few-shot 差"：LAMBADA 上 one-shot 低于 zero-shot，单个示例有时反而误导格式；
 - "loss 下降就意味着所有能力平滑上升"：算术在某个尺寸区间突然出现，loss 曲线看不出来。
+- "GPT-2 不需要示例所以它的方式更强"：GPT-3 的 zero-shot 已全面超过 GPT-2，示例是可选增益；GPT-2 的 zero-shot 是存在性证明，不是可用水平（§11.13）。
 
 ## 我曾经答错的地方
 
 - 2026-10-11 检查题 1：任务信息的路径只说到"token 进入"，没说到注意力从示例位置读取；把 KV cache 当成前向结束后的最终去向。正解：KV cache 只在本次生成期间缓存示例的 K、V，生成完即丢弃，不进权重（§11.1、§11.2）。
-- 2026-10-11 检查题 3：条件 × 读法二维表答不出（A3 同一短板第三次）。正解见 [[gpt-2-zero-shot]] §2.3 与本卡 §10 末段：E3 的 SST-2 8-shot 与 zero-shot 都是打分式，加法是生成式 few-shot，第四格生成式 zero-shot 对应 GPT-3 的 zero-shot TriviaQA 或翻译。
+- 2026-10-11 检查题 3：条件 × 读法二维表答不出（A3 同一短板第三次）。正解见 [[A3-gpt-2-zero-shot]] §2.3 与本卡 §10 末段：E3 的 SST-2 8-shot 与 zero-shot 都是打分式，加法是生成式 few-shot，第四格生成式 zero-shot 对应 GPT-3 的 zero-shot TriviaQA 或翻译。
 
 ## 掌握证据
 

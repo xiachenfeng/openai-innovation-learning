@@ -1,6 +1,6 @@
 ---
 title: GPT-2：zero-shot 与 prompt 即任务说明
-aliases: [GPT-2, zero-shot task transfer, prompt 即任务, WebText, 分阶段发布, A3]
+aliases: [GPT-2, zero-shot task transfer, prompt 即任务, WebText, 分阶段发布, A3, gpt-2-zero-shot]
 track: A
 level: 2
 status: canonical
@@ -23,7 +23,7 @@ tags: [openai, track/A, status/canonical]
 一句话定义：把任务描述也当作文本放进输入，p(y | x) 变成 p(y | x, task)，于是一个只做 next-token 预测、从不微调的语言模型可以直接执行多种任务；配套是 WebText 数据、放大 10 倍的模型和分阶段发布。
 
 > [!tip] 一句话抓住本节
-> **表征里如果已经含有任务，连 W_y 都不需要，用文本把它"点名"就能读出来。** 这是 [[sentiment-neuron-gpt-1]] 那句"预训练表征里已有特征，微调只是读出来"的下一步：读出的手段从梯度换成 prompt。前提也随之加了一条：训练文本里要自然出现过类似的任务格式。
+> **表征里如果已经含有任务，连 W_y 都不需要，用文本把它"点名"就能读出来。** 这是 [[A2-sentiment-neuron-gpt-1]] 那句"预训练表征里已有特征，微调只是读出来"的下一步：读出的手段从梯度换成 prompt。前提也随之加了一条：训练文本里要自然出现过类似的任务格式。
 
 > [!success] Public algorithm
 > 论文、代码、四个尺寸（117M / 345M / 762M / 1542M）的权重全部公开；模型结构改动（pre-LN、残差初始化缩放、字节级 BPE、上下文 1024）论文明确说明。
@@ -39,7 +39,7 @@ tags: [openai, track/A, status/canonical]
 
 ## 1. 承接的瓶颈
 
-上一代是 [[sentiment-neuron-gpt-1]]，它的问题：每个任务一次微调，产出一份权重和一套手工拼法；小数据微调靠不住（E1 第二阶段 n=100 纯记忆）；更根本的是单数据集单任务系统脆弱，换分布就崩。GPT-2 问：能否一个参数都不改，让 LM 直接做任务？
+上一代是 [[A2-sentiment-neuron-gpt-1]]，它的问题：每个任务一次微调，产出一份权重和一套手工拼法；小数据微调靠不住（E1 第二阶段 n=100 纯记忆）；更根本的是单数据集单任务系统脆弱，换分布就崩。GPT-2 问：能否一个参数都不改，让 LM 直接做任务？
 
 ## 2. 核心思想
 
@@ -130,11 +130,11 @@ WebText：Reddit 上 karma ≥ 3 的外链，去重清洗，约 800 万文档、
 | LayerNorm | post-LN | pre-LN + 末尾 LN |
 | 残差初始化 | 标准 | 乘 $1/\sqrt{N}$，N 为残差层数 |
 
-E1 的 `model.py` 用的是 pre-LN，即 GPT-2 写法，见 [[transformer-decoder-next-token]]。
+E1 的 `model.py` 用的是 pre-LN，即 GPT-2 写法，见 [[A1-transformer-decoder-next-token]]。
 
 ## 3. 目标函数与数据
 
-目标函数与 [[transformer-decoder-next-token]] 完全相同，A 线里唯一一节"目标函数零改动"的创新，创新落在数据、规模与使用方式：
+目标函数与 [[A1-transformer-decoder-next-token]] 完全相同，A 线里唯一一节"目标函数零改动"的创新，创新落在数据、规模与使用方式：
 
 $$
 \mathcal{L}(\Theta) = \sum_i \log P(u_i \mid u_{i-k}, \ldots, u_{i-1}; \Theta), \qquad k = 1024
@@ -148,11 +148,11 @@ $$
 
 ## 5. 推理行为
 
-输入 prompt，输出续写或候选打分；采样用 top-k 加 temperature；每个任务的 prompt 格式手工试出（"TL;DR:" 借自 Reddit 长帖末尾写总结的习惯，WebText 里大量存在），prompt 工程从此开始。去掉 "TL;DR:" 摘要指标明显下降（§7），说明 prompt 是从数据里读出来的任务开关，不是装饰。延长线：GPT-2 找数据里偶然的开关 → [[gpt-3-in-context-learning]] 用显式描述加例子 → [[instructgpt-chatgpt]] 用人写的指令训练，不再依赖偶然开关。
+输入 prompt，输出续写或候选打分；采样用 top-k 加 temperature；每个任务的 prompt 格式手工试出（"TL;DR:" 借自 Reddit 长帖末尾写总结的习惯，WebText 里大量存在），prompt 工程从此开始。去掉 "TL;DR:" 摘要指标明显下降（§7），说明 prompt 是从数据里读出来的任务开关，不是装饰。延长线：GPT-2 找数据里偶然的开关 → [[A5-gpt-3-in-context-learning]] 用显式描述加例子 → [[B3-instructgpt-chatgpt]] 用人写的指令训练，不再依赖偶然开关。
 
 ## 6. Scaling 维度
 
-同一数据、同一目标下第一次系统比较四个尺寸，所有下游任务表现随 log(参数量) 近似线性上升、未饱和，最大模型仍 underfit。它是 [[scaling-laws]] 的雏形但还缺"law"，差在哪见 §11.4。
+同一数据、同一目标下第一次系统比较四个尺寸，所有下游任务表现随 log(参数量) 近似线性上升、未饱和，最大模型仍 underfit。它是 [[A4-scaling-laws]] 的雏形但还缺"law"，差在哪见 §11.4。
 
 ```mermaid
 %%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
@@ -192,9 +192,9 @@ flowchart TB
 
 ## 9. 后续影响
 
-- [[scaling-laws]]：把图 1 的四个点变成几十个点、换成 loss 坐标、拟合成幂律，回答"下一个该多大"（见 §11.4）；
-- [[gpt-3-in-context-learning]]：规模再放大 100 倍，加 few-shot，把 prompt 路径推到可用；
-- [[instructgpt-chatgpt]]：prompt 路径的反面，zero-shot 时模型不听指令，才需要对齐；
+- [[A4-scaling-laws]]：把图 1 的四个点变成几十个点、换成 loss 坐标、拟合成幂律，回答"下一个该多大"（见 §11.4）；
+- [[A5-gpt-3-in-context-learning]]：规模再放大 100 倍，加 few-shot，把 prompt 路径推到可用；
+- [[B3-instructgpt-chatgpt]]：prompt 路径的反面，zero-shot 时模型不听指令，才需要对齐；
 - 分阶段发布是 OpenAI 发布策略线的起点，延续到今天的 system card。
 
 ## 10. 与相关方法的区别
@@ -219,15 +219,15 @@ flowchart TB
 
 ### 11.3 "每任务产物是 prompt"是什么意思（2026-09-19 追问）
 
-指为了让模型能做某个任务而额外制造并保存的东西。GPT-1 每个任务要微调出一份完整权重（12 个任务 12 份）；GPT-2 每个任务只需一个 prompt 模板（"english: {x} french:"），对该任务所有输入复用，填入 x 后直接喂同一个模型读续写，中间没有别的步骤。差别不只是省存储：12 份权重是 12 个互不相通的模型，12 个模板背后是同一个模型，任务可以串联组合，这是"一个模型做所有事"的起点，也是 [[codex-agent-loop-compaction]] 一类 agent 能成立的前提之一。
+指为了让模型能做某个任务而额外制造并保存的东西。GPT-1 每个任务要微调出一份完整权重（12 个任务 12 份）；GPT-2 每个任务只需一个 prompt 模板（"english: {x} french:"），对该任务所有输入复用，填入 x 后直接喂同一个模型读续写，中间没有别的步骤。差别不只是省存储：12 份权重是 12 个互不相通的模型，12 个模板背后是同一个模型，任务可以串联组合，这是"一个模型做所有事"的起点，也是 [[D3-codex-agent-loop-compaction]] 一类 agent 能成立的前提之一。
 
 ### 11.4 GPT-2 是不是 scaling law 的雏形（2026-09-19 追问）
 
-是雏形，缺"law"。GPT-2 有：同一数据与目标下四个尺寸横向比较（实验设计）、图 1 下游表现随 log N 近似线性且未饱和（定性趋势）、明说最大模型仍 underfit WebText（算力未到头）。[[scaling-laws]] 补上：自变量从 N 扩到 N、D、C；因变量换成测试 loss；关系写成可外推的幂律；给出算力固定时 N 与 D 的分配；用途从"说明方向"变成"决定下一次训练多大"。非 OpenAI 前史：Hestness 等 2017（百度）已在翻译、语音上报告幂律学习曲线，Kaplan 论文引用了它；OpenAI 的贡献是在 Transformer LM 上把幂律做成决策工具。
+是雏形，缺"law"。GPT-2 有：同一数据与目标下四个尺寸横向比较（实验设计）、图 1 下游表现随 log N 近似线性且未饱和（定性趋势）、明说最大模型仍 underfit WebText（算力未到头）。[[A4-scaling-laws]] 补上：自变量从 N 扩到 N、D、C；因变量换成测试 loss；关系写成可外推的幂律；给出算力固定时 N 与 D 的分配；用途从"说明方向"变成"决定下一次训练多大"。非 OpenAI 前史：Hestness 等 2017（百度）已在翻译、语音上报告幂律学习曲线，Kaplan 论文引用了它；OpenAI 的贡献是在 Transformer LM 上把幂律做成决策工具。
 
 ### 11.5 GPT 和 Claude 的分词器是怎样的（2026-09-23 追问）
 
-**Public algorithm**：GPT-2 论文写明用字节级 BPE：基础符号是 256 个 UTF-8 字节，任何文本都能编码，没有 OOV；在字节上跑 BPE（算法见 §11.6）到 50257 个词表项；编码前先用正则按空格、标点、数字预切，空格附在词前，且禁止跨类别合并。OpenAI 开源的 `tiktoken` 公开了后续词表：r50k_base（GPT-2/3，约 50K）、cl100k_base（GPT-3.5/4，约 100K）、o200k_base（GPT-4o、o 系列，gpt-oss 用它的 harmony 变体，约 200K）。词表越大，常见中文字词被合成单个 token 的越多，同样中文用的 token 越少；汉字 UTF-8 占 3 字节，生僻字没被合并时会拆成 2～3 个 token。**Unknown**（非 OpenAI）：Claude 早期分词器曾公开，当前模型的词表与规则未公开，只能用官方 token 计数接口；"同属 BPE 一类"只是 Inference。所以同一段文本在两家模型上的 token 数不能直接比较。与 GPT-1 的对比见 [[sentiment-neuron-gpt-1]]（GPT-1 用 40k 次合并的 BPE，先经 ftfy 清洗、spaCy 预切，不是字节级）。
+**Public algorithm**：GPT-2 论文写明用字节级 BPE：基础符号是 256 个 UTF-8 字节，任何文本都能编码，没有 OOV；在字节上跑 BPE（算法见 §11.6）到 50257 个词表项；编码前先用正则按空格、标点、数字预切，空格附在词前，且禁止跨类别合并。OpenAI 开源的 `tiktoken` 公开了后续词表：r50k_base（GPT-2/3，约 50K）、cl100k_base（GPT-3.5/4，约 100K）、o200k_base（GPT-4o、o 系列，gpt-oss 用它的 harmony 变体，约 200K）。词表越大，常见中文字词被合成单个 token 的越多，同样中文用的 token 越少；汉字 UTF-8 占 3 字节，生僻字没被合并时会拆成 2～3 个 token。**Unknown**（非 OpenAI）：Claude 早期分词器曾公开，当前模型的词表与规则未公开，只能用官方 token 计数接口；"同属 BPE 一类"只是 Inference。所以同一段文本在两家模型上的 token 数不能直接比较。与 GPT-1 的对比见 [[A2-sentiment-neuron-gpt-1]]（GPT-1 用 40k 次合并的 BPE，先经 ftfy 清洗、spaCy 预切，不是字节级）。
 
 ### 11.6 BPE 属于什么算法（2026-09-23 追问）
 
@@ -245,7 +245,7 @@ LLM 不用 Huffman 的原因：
 
 1. **序列长度**：Huffman 不减少符号个数，只把每个符号换成几个比特，交给模型逐比特预测时序列反而变长几倍，注意力成本按长度平方增长，上下文窗口能装下的文本也变少。BPE 把英文压到约 4 个字符一个 token。
 2. **单元要有意义**：Huffman 码字的比特没有独立语义，边界取决于树形；BPE 的 token 是反复出现的子词（如 ` the`、`ing`），embedding 能学到语义和形态。
-3. **分工**：频率建模本来就是语言模型自己的工作，而且它用上下文条件分布，比 Huffman 的静态单符号频率强得多；语言模型加算术编码本身就是压缩器（[[transformer-decoder-next-token]] §11.6；非 OpenAI：DeepMind 2023《Language Modeling Is Compression》）。分词器不必再做熵编码，只负责切分，两边如何分摊总比特见 §11.9。
+3. **分工**：频率建模本来就是语言模型自己的工作，而且它用上下文条件分布，比 Huffman 的静态单符号频率强得多；语言模型加算术编码本身就是压缩器（[[A1-transformer-decoder-next-token]] §11.6；非 OpenAI：DeepMind 2023《Language Modeling Is Compression》）。分词器不必再做熵编码，只负责切分，两边如何分摊总比特见 §11.9。
 4. **旋钮可控**：BPE 可以直接选 V，在 embedding/softmax 大小与序列长度之间折中（r50k → cl100k → o200k 就是在调这个旋钮）；Huffman 的字母表是给定的。
 
 **Public algorithm**：GPT-2 论文把 BPE 定位为字符级与词级之间的实用折中：词级有未登录词、词表巨大；当时的字节级 LM 在大规模数据集上打不过词级 LM；字节级 BPE 兼得全覆盖与较短序列。选 BPE 而不选 WordPiece、Unigram 更多是简单、快、有先例的工程取舍，公开资料里没有 OpenAI 的对比实验，"BPE 最优"不能当结论。代价：数字和拼写被切得不规则，影响算术与逐字母任务；不同语言 token 成本不公平；训练中极少出现的 token 会产生异常行为（社区称 glitch token，非官方发现）。
@@ -283,11 +283,11 @@ Huffman 里 $N$ 不变，只压每个元素的比特数；BPE 里每个元素的
 | GPT-2 | 2019 | zero-shot task transfer | 0，只写任务描述 | 不改 |
 | GPT-3 | 2020 | few-shot in-context learning | 上下文里放 k 个示例 | 不改 |
 
-GPT-1 论文第 5 节只把 zero-shot behaviors 当分析材料；GPT-2 把它抬成论文标题级的主张；GPT-3 定义 zero / one / few-shot 三档并起名 in-context learning。两个词本身都不是 OpenAI 发明（见 11.1），OpenAI 做的是换含义：类别→任务，少量样本→写进上下文、不更新参数。ELI5 图板：https://claude.ai/artifact/57G8vt5QYDAqwCTxvkRB6B 。相关：[[gpt-3-in-context-learning]]、[[sentiment-neuron-gpt-1]]。
+GPT-1 论文第 5 节只把 zero-shot behaviors 当分析材料；GPT-2 把它抬成论文标题级的主张；GPT-3 定义 zero / one / few-shot 三档并起名 in-context learning。两个词本身都不是 OpenAI 发明（见 11.1），OpenAI 做的是换含义：类别→任务，少量样本→写进上下文、不更新参数。ELI5 图板：https://claude.ai/artifact/57G8vt5QYDAqwCTxvkRB6B 。相关：[[A5-gpt-3-in-context-learning]]、[[A2-sentiment-neuron-gpt-1]]。
 
 ### 11.11 few-shot 的例子为什么"下一次问别的就不留痕迹"（2026-09-28 追问）
 
-few-shot 示例只是当前 prompt 里的输入 token，模型在这一次前向计算里通过 attention 读取它们，权重不发生任何更新。每次调用都是独立的前向计算，模型能看见的只有当前上下文，所以新 prompt 里没有那几行示例时，模型不是"忘了"，而是从未记住过。对照 fine-tuning：梯度更新改的是权重，改动永久保留，之后不给提示也会做。这正是 GPT-3 把它命名为 in-context learning 的原因：学习发生在 context 里，不发生在参数里。要让示例持续生效只能每次重新贴入，system prompt 与 few-shot 模板由此而来；聊天产品"记得上一轮"也是客户端把历史对话拼回上下文，不是模型自身记忆。相关：[[gpt-3-in-context-learning]]、[[transformer-decoder-next-token]]。
+few-shot 示例只是当前 prompt 里的输入 token，模型在这一次前向计算里通过 attention 读取它们，权重不发生任何更新。每次调用都是独立的前向计算，模型能看见的只有当前上下文，所以新 prompt 里没有那几行示例时，模型不是"忘了"，而是从未记住过。对照 fine-tuning：梯度更新改的是权重，改动永久保留，之后不给提示也会做。这正是 GPT-3 把它命名为 in-context learning 的原因：学习发生在 context 里，不发生在参数里。要让示例持续生效只能每次重新贴入，system prompt 与 few-shot 模板由此而来；聊天产品"记得上一轮"也是客户端把历史对话拼回上下文，不是模型自身记忆。相关：[[A5-gpt-3-in-context-learning]]、[[A1-transformer-decoder-next-token]]。
 
 ## 最小示例或实验
 

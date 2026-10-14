@@ -275,7 +275,7 @@ Track B 拆成两半，因为 Deliberative Alignment、CoT Monitoring 和 GPT-Re
 4. 判断是否影响四条主线的因果链；影响则提议修改课程，不直接改
 5. 更新 `sources/source-status.md` 与 `timeline.md`
 
-当前待处理：GPT-6 Astra（2026-08 之后发布，尚未纳入任何主线），见 `knowledge/F-frontier/gpt-6-astra.md`。
+当前待处理：GPT-6 Astra（2026-08 之后发布，尚未纳入任何主线），见 `knowledge/F-frontier/F-gpt-6-astra.md`。
 
 ---
 
