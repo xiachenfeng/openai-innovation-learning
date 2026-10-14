@@ -2,7 +2,7 @@
 
 - Name: E3 in-context learning 探针（GPT-2 四个开源尺寸，SST-2 zero / one / few-shot）
 - Date: 2026-09-28 启动
-- Related concept: [[gpt-3-in-context-learning]]（A5）；读法承接 [[gpt-2-zero-shot]] §2.3
+- Related concept: [[A5-gpt-3-in-context-learning]]（A5）；读法承接 [[A3-gpt-2-zero-shot]] §2.3
 - Status: 骨架已推送，待用户填三处空并在 4090 上跑
 
 ## Question
@@ -29,7 +29,7 @@
 - `icl_probe.py`：对每个 (model, k, seed)，从 SST-2 train 抽 K 条示例，对固定的 200 条 validation 查询逐条前向，取末位 " positive" 与 " negative" 两个 token 的 logit 比大小。记录 acc、多数类基线、预测为 positive 的比例（看先验偏向）、平均 prompt 长度。`--summarize` 按 model × k 打印均值 ± 样本标准差与 gap。可选 `--task addition`：两位数加法，贪心生成 4 个 token 解析整数。
 - `run_probe.sh`：先冒烟（gpt2，K ∈ {0,4}，2 组示例，50 条），再正式跑四个尺寸。
 - 三处 `TODO(you)`：(1) 拼 prompt；(2) 打分式读法比较两个 logit；(3) 跨 seed 样本标准差。
-- 模型不在本目录定义：用 Hugging Face `transformers` 的 `GPT2LMHeadModel`（`modeling_gpt2.py` 的 PyTorch 移植，结构与 E1 `model.py` 逐层对应，见 [[gpt-3-in-context-learning]] §11.11），权重为 OpenAI 2019 官方 checkpoint；官方原版定义在 github.com/openai/gpt-2 `src/model.py`。
+- 模型不在本目录定义：用 Hugging Face `transformers` 的 `GPT2LMHeadModel`（`modeling_gpt2.py` 的 PyTorch 移植，结构与 E1 `model.py` 逐层对应，见 [[A5-gpt-3-in-context-learning]] §11.11），权重为 OpenAI 2019 官方 checkpoint；官方原版定义在 github.com/openai/gpt-2 `src/model.py`。
 
 ## Variables
 
@@ -85,11 +85,11 @@ bash ../sync.sh "E3: 填空并跑四个尺寸"
 
 ## Knowledge Changes
 
-（待填：结果写入 [[gpt-3-in-context-learning]] 的"最小示例或实验"段）
+（待填：结果写入 [[A5-gpt-3-in-context-learning]] 的"最小示例或实验"段）
 
 ## 可选扩展（2026-10-01 追问引出）
 
-示例标签随机打乱的 K = 8 对照（Min 等 2022 的设计，非 OpenAI）：准确率接近正常示例 → 示例主要激活格式与标签空间；掉到 zero-shot 水平 → 标签映射被用到。正式四尺寸跑完后再加开关。见 [[gpt-3-in-context-learning]] §11.2。
+示例标签随机打乱的 K = 8 对照（Min 等 2022 的设计，非 OpenAI）：准确率接近正常示例 → 示例主要激活格式与标签空间；掉到 zero-shot 水平 → 标签映射被用到。正式四尺寸跑完后再加开关。见 [[A5-gpt-3-in-context-learning]] §11.2。
 
 在 E1 tiny GPT 上复现 induction head 相变曲线（2026-10-11 追问引出，非 OpenAI，Olsson 等 2022 的探针）：
 
@@ -98,7 +98,7 @@ bash ../sync.sh "E3: 填空并跑四个尺寸"
 3. 探针脚本：随机抽 N 个 token 拼成长 2N 的序列，batch 几百条，对每个 checkpoint 在 `no_grad` 下前向一次，取后半段 loss 减前半段 loss、每层每头在后半段各行落在"上次出现 + 1"那一列的注意力均值（prefix-matching score）；
 4. 按训练步数画曲线，看是否出现窄窗口跳变，以及哪一层哪一头跳。
 
-预期：E1 模型层数 ≥ 2 时可看到；若只有 1 层应看不到（需要 K-composition）。优先级低于 E3 主体，四尺寸跑完后再考虑。见 [[gpt-3-in-context-learning]] §11.5。
+预期：E1 模型层数 ≥ 2 时可看到；若只有 1 层应看不到（需要 K-composition）。优先级低于 E3 主体，四尺寸跑完后再考虑。见 [[A5-gpt-3-in-context-learning]] §11.5。
 
 ## Next Experiment
 

@@ -2,7 +2,7 @@
 
 - Name: E1 tiny GPT（字符级 decoder-only 语言模型）
 - Date: 2026-09-16 启动
-- Related concept: [[transformer-decoder-next-token]]（A1）、[[sentiment-neuron-gpt-1]]（A2，第二阶段）
+- Related concept: [[A1-transformer-decoder-next-token]]（A1）、[[A2-sentiment-neuron-gpt-1]]（A2，第二阶段）
 - Status: 第一阶段完成（2026-09-17）；第二阶段 16 组跑完（2026-09-18，用户填空三处全对，4090）；种子复验待跑
 
 ## Question
@@ -153,7 +153,7 @@ CSV 新增 24 行而非 12 行：脚本被执行了两次。同一 seed 两次�
 
 ## Knowledge Changes
 
-[[transformer-decoder-next-token]] "掌握证据"记录 E1 第一阶段完成；mastery 保持 1（升 2 需要复测时 mechanism ≥ 3）。
+[[A1-transformer-decoder-next-token]] "掌握证据"记录 E1 第一阶段完成；mastery 保持 1（升 2 需要复测时 mechanism ≥ 3）。
 
 ## Next Experiment
 

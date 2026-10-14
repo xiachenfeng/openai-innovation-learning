@@ -2,7 +2,7 @@
 
 - Name: E2 scaling-law 拟合（字符级 tiny GPT，4 个尺寸）
 - Date: 2026-09-19 启动
-- Related concept: [[scaling-laws]]（A4）；复用 [[transformer-decoder-next-token]] 的 E1 代码
+- Related concept: [[A4-scaling-laws]]（A4）；复用 [[A1-transformer-decoder-next-token]] 的 E1 代码
 - Status: 两轮跑完（2026-09-20，4090）；fit.py 符号 bug 已由用户修正；s1、s2 在第二轮 12000 步上限处仍未收敛，s3、s4 已早停。待用户口头解读（09-23 A4 复测）
 
 ## Question
@@ -172,7 +172,7 @@ python scaling.py --n_layer 3 --n_embd 64 --n_head 4 --tag s2_lr1e-3 --lr 1e-3 -
 - 字符级、词表 65、模型 ≤ 500 万参数，指数与常数都不能和论文比，只能比形状；
 - 四个点拟合一条直线，误差大；单种子；
 - 所有尺寸同一学习率，小模型可能欠训练（Chinchilla 对 Kaplan 的批评在这里同样成立），可作为后续对照：给 s1、s2 换 lr 1e-3 再跑。
-- 恒定学习率、无 warmup 与衰减：每个点都没吃到退火收益，best_val 系统性偏高，常数不能与论文比；若退火收益随尺寸不同，α_N 也会有偏。可选对照：每个尺寸加一个长度匹配 best_step 的余弦计划重跑（见 [[scaling-laws]] §11.19，2026-09-25 追问）。
+- 恒定学习率、无 warmup 与衰减：每个点都没吃到退火收益，best_val 系统性偏高，常数不能与论文比；若退火收益随尺寸不同，α_N 也会有偏。可选对照：每个尺寸加一个长度匹配 best_step 的余弦计划重跑（见 [[A4-scaling-laws]] §11.19，2026-09-25 追问）。
 
 ## Cost
 
@@ -181,7 +181,7 @@ python scaling.py --n_layer 3 --n_embd 64 --n_head 4 --tag s2_lr1e-3 --lr 1e-3 -
 
 ## Knowledge Changes
 
-[[scaling-laws]]："最小示例或实验"写入第二轮结果表与解读要点；"掌握证据"记录复测；mastery 1 → 2。
+[[A4-scaling-laws]]："最小示例或实验"写入第二轮结果表与解读要点；"掌握证据"记录复测；mastery 1 → 2。
 
 ## Next Experiment
 
