@@ -1,6 +1,6 @@
 # Current Learning State
 
-Last updated: 2026-10-11（A5 检查题评完，mastery 1；论文台账建立）
+Last updated: 2026-10-16（门槛由 mastery 3 放宽到 2；B1 检查题待答；A 线六项复测过期）
 
 ## Long-term Goal
 
@@ -12,17 +12,19 @@ Last updated: 2026-10-11（A5 检查题评完，mastery 1；论文台账建立�
 
 时间分配规则（幂律原则，见 curriculum.md 设计原则 2）：
 - 每周最多一个课程节点，不因为"感觉慢"加速；
-- importance 5 节点未到 mastery 3 不进入下一节，可以为它多花一个 40 分钟块；
+- importance 5 节点未到 mastery 2 不进入下一节，可以为它多花一个 40 分钟块；2 → 3 靠对应实验与到期复测补，不停主线（2026-10-16 由 3 放宽到 2，见 curriculum.md 设计原则 2）；
 - importance 4 节点复测一次后无论分数直接走，不追加课时；
 - 周报里记录"本周耗时最多的节点及其 importance"，连续两周不是 5 就要调整。
 
 ## Current Phase
 
-Track A 进行中：前置诊断已完成（8 题，见 answer-history 与 mastery）。
+Track B 第 1 周（2026-10-15 起）。用户决定在 A5 复测与 E3 之前先开 Track B；A5（importance 5）停在 mastery 1，其复测块与 E3 作为并行任务保留，不阻塞 B 线。Track A 因果表未交。
 
 ## Current Focus
 
-A5 GPT-3 与 ICL 讲解完成（Track A 最后一节）：卡片 canonical，图板 10 张，八个追问入卡；E3 骨架推送，用 GPT-2 四个开源尺寸而非 E1 模型。10-11 检查题：Q1 2 分、Q2 3 分、Q3 0 分 → mastery 1。A5 importance 5 未到 3，按规则先复测（10-14）再进 Track B。之后：Track A 因果表（第一档）、E3 跑完解读、09-30 与 10-01 复测块。
+B1 PPO 与 Learning from Human Preferences 讲解完成：canonical 卡 + 3 张图入卡，图板 7 张；三道检查题待答（Q1 在线 RM 的必要性、Q2 clip 四情况计算、Q3 2017→2019 合体加了什么）。B1 importance 5，进 B2 的门槛 mastery 2，目标 3 靠 E4 与复测补；检查题评完后进 B2（E4 启动）。
+
+上一节：A5 GPT-3 与 ICL 讲解完成（Track A 最后一节）：卡片 canonical，图板 10 张，八个追问入卡；E3 骨架推送，用 GPT-2 四个开源尺寸而非 E1 模型。10-11 检查题：Q1 2 分、Q2 3 分、Q3 0 分 → mastery 1。A5 importance 5 停在 1，未到进下一节的门槛 2（10-16 放宽后门槛为 2），复测仍欠；用户已决定先开 Track B。之后：Track A 因果表（第一档）、E3 跑完解读、09-30 与 10-01 复测块。
 
 上一节：A4 Scaling Laws 完成：卡片 canonical，十个追问入卡；E2 两轮跑完，用户解读复测 correctness 3 / mechanism 3 → mastery 2。短板：欠训练假象与固定 lr 计划批评的联系（09-23 补答）；连续六次未写自评信心。下一步：E2 结果解读、09-22～23 五项复测（A1 block、A2 解读、A2 机制、A3 读法、A4 预测）。诊断结论：A 线能识别术语（A1、A4 mastery 1），B/C/S 线从零起步，D 线能识别 tool calling（D2 mastery 1）。PyTorch 不能独立写训练循环，E1 骨架由教练提供。
 
@@ -46,6 +48,7 @@ A5 GPT-3 与 ICL 讲解完成（Track A 最后一节）：卡片 canonical，图
 2026-09-28：A5 GPT-3 与 ICL 讲解，canonical 卡 + 4 张图入卡；E3 骨架推送（commit b3f3f54）。
 2026-09-29～10-11：A5 八个追问入卡（§11.1～11.8），图板加到 10 张；来源表加 A-9、R-5。
 2026-10-11：A5 检查题评分 → mastery 1；新建论文台账 knowledge/papers.md（P-1～P-21）并把规则写入 AGENTS.md。
+2026-10-15：B1 讲解（两篇 2017 论文），canonical 卡、图板 7 张、台账 P-25～P-28、来源 B-16～B-19 与 R-9；检查题待答。
 
 ## Active Experiment
 
@@ -53,4 +56,4 @@ E3 骨架已推送，待用户填三处空并在 4090 上跑（GPT-2 四尺寸 �
 
 ## Next Recommended Action
 
-1. 新 session（10-14 起）：复测块一个 40 分钟，合并 A5（2×2 表、注意力路径、Q2 三条件）、A3、A2 解读、A4 第 4 问、A1 多头 shape，全部过期项一次清；每题先写信心；2. 云主机跑 E3 并 sync，结果解读计入 A5；3. Track A 因果表（第一档），教练转图写入 MOC；4. 补第 2、3 周周报；5. 手动删除根目录空文件 gpt-3-in-context-learning.md；6. 以上完成且 A5 ≥ 2 后进 Track B B1。
+1. 一个 40 分钟复测块清掉六项过期项（A5 2×2 表与注意力路径、A3、A2 解读、A4 第 4 问、A1 多头 shape；每题第一行写信心），按「学习者输出优先」第 2 条这一步排在新内容之前；2. 答 B1 三道检查题（每题先写信心），评分后更新 mastery；B1 ≥ 2 即可进 B2；3. 云主机跑 E3 并 sync；4. Track A 因果表（第一档）；5. 补第 2～4 周周报；6. 手动删除根目录空文件 gpt-3-in-context-learning.md；7. B1 过关后新 session 进 B2（Learning to Summarize，E4 启动）。
