@@ -95,7 +95,7 @@
 3. 对比类内容（fine-tune vs ICL、ORM vs PRM、单 agent vs multi-agent）用左右并列的两张图或一张对照表；
 4. 每条主线结束时产出一张"主线因果图"，节点是创新，边上写"解决了什么瓶颈"；
 5. 图保存进知识卡的"图解"段，不只留在对话里；
-6. 聊天窗口不渲染 mermaid 代码块（只显示源码）。每次 session 讲解涉及的图，用 Artifact 发布一个"本节图板"页面（`<pre class="mermaid">` 原生渲染），聊天里给链接并用一句话说明每张图讲什么；同一 session 内后续的图追加到同一个图板重新发布，不新建。知识卡里保留同一份 mermaid 源码，由 Obsidian 渲染。需要交互（如调 budget 看 pass@k 曲线）时同样用 Artifact；发布后立刻把链接登记进 `knowledge/artifacts.md`（V-编号递增）并写入对应概念卡的「图板与图解页」一节与 MOC 的同名表，规则见 `knowledge/README.md`；`/eli5` 生成的图解页同样登记；
+6. 聊天窗口不渲染 mermaid 代码块（只显示源码）。每次 session 讲解涉及的图，用 Artifact 发布一个"本节图板"页面（`<pre class="mermaid">` 原生渲染），聊天里给链接并用一句话说明每张图讲什么；同一 session 内后续的图追加到同一个图板重新发布，不新建。知识卡里保留同一份 mermaid 源码，由 Obsidian 渲染。需要交互（如调 budget 看 pass@k 曲线）时同样用 Artifact；图板里的 mermaid 不用 `~~~` 不可见连线（claude.ai 的渲染器行为同 mermaid 9.x，用了整块显示成源码且无报错；知识卡里照用，Obsidian 支持），标题节点改用普通 `-->` 或给 subgraph 写真实标题，发布前用无头 Chrome 加 mermaid 9.4 的 `parse` 把全部块过一遍；发布后立刻把链接登记进 `knowledge/artifacts.md`（V-编号递增）并写入对应概念卡的「图板与图解页」一节与 MOC 的同名表，规则见 `knowledge/README.md`；`/eli5` 生成的图解页同样登记；
 7. 图和数学只用 Obsidian 原生支持的 mermaid 与 LaTeX，仓库里不放图片文件；配色、节点形状、记号约定见 `knowledge/README.md`。
 8. **知识卡里的图必须能在 16 寸 MacBook Pro 上一屏看全，并能整张印在 A4 纸上**（Obsidian 导出 PDF 不缩放，超宽部分直接裁掉）。规则：
    - 一律 `flowchart TB` 竖向排列，不用 LR；

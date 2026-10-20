@@ -7,7 +7,7 @@ status: canonical
 mastery: 0
 importance: 4
 created: 2026-09-19
-updated: 2026-09-27
+updated: 2026-10-15
 source_check: 2026-09-13
 sources:
   - https://openai.com/index/better-language-models/
@@ -301,7 +301,30 @@ E3（A5 时）用 E1 的模型或 GPT-2 small 做 zero/few-shot 探针；A3 本�
 
 ## 我曾经答错的地方
 
-- 2026-09-19：问"不用 W_y 从 LM head 读出分类的两种办法"，答了 few-shot 和不知道；未给自评信心。
+### 2026-09-19 · 从 LM head 读出分类的两种办法（检查题）
+- 题目：不用 W_y，从 LM head 读出分类结果的两种办法是什么，哪种在 GPT-1 §5 出现过？
+- 我的答案："一种是 few-shot，另一个不知道"（未写信心）。
+- 错在哪：few-shot 是上下文的条件，不是读法；输入端与输出端混在一起。
+- 正确答案：生成式续写、看写出的词；打分式比较候选 token 的概率取大。GPT-1 §5 用的是打分式（"very" + positive / negative）（§2.3）。
+
+### 2026-09-27 · 读法、embedding 行与 few-shot（复测）
+- 题目：两种读法各是什么；打分式用到 embedding 矩阵的哪几行、与 W_y 的关系；few-shot 为什么不是第三种读法。
+- 我的答案：打分式比较标签词 logit、生成式让模型续写；"两个标签词那两行"；"few-shot 本质也是输出对应词的 logits"（未写信心）。
+- 错在哪：前两问对，但第二问没说明 weight tying；第三问第二次把 few-shot 当读法。
+- 正确答案：weight tying 下 LM head = Eᵀ，两个标签词的行就构成 2×d 的 W_y；few-shot 改的是上下文（条件），与读法正交、可任意组合（§2.3、§11.10）。
+
+### 2026-10-11 · 条件 × 读法二维表归格（A5 检查题 3，第三次）
+- 题目：把 E3 的三个设置放进条件 × 读法二维表并补第四格。
+- 我的答案："不懂"。
+- 错在哪：两个维度仍未分开。
+- 正确答案：见 [[A5-gpt-3-in-context-learning]] 同名段落。
+## 图板与图解页
+
+本卡相关的 Artifact 页面，全表见 [[artifacts]]（私有链接，需登录 claude.ai）。
+
+- [A3 GPT-2 图板](https://claude.ai/artifact/GzWJbEhPea5v3HpWm5oLSS)（本节图板，2026-09-19）：fine-tune vs prompt、任务写进文本、四尺寸 scaling。对应 全卡。
+- [字节级 BPE 分词器](https://claude.ai/artifact/2ouTn5rzu1mgUTJdXA7tz6)（ELI5 图解，2026-09-23）：BPE 合并过程与 Huffman 对照。对应 §11.5～11.9。
+- [Zero-shot 与 Few-shot](https://claude.ai/artifact/57G8vt5QYDAqwCTxvkRB6B)（ELI5 图解，2026-09-28）：GPT-1 培训班 / GPT-2 zero-shot / GPT-3 few-shot 三种教法。对应 §11.10～11.11（A5 §11.1 对照）。
 
 ## 掌握证据
 

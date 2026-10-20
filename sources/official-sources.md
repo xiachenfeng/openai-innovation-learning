@@ -22,6 +22,7 @@ openai.com 对 curl、WebFetch 和内置浏览器返回 403，逐页打开需由
 | A-7 | GPT-4 research（predictable scaling 部分） | https://openai.com/index/gpt-4-research/ | 知识确认 |
 | A-8 | Generative models（2016，背景） | https://openai.com/index/generative-models/ | 知识确认 |
 | A-9 | An Empirical Model of Large-Batch Training（McCandlish 等，2018，梯度噪声尺度与临界 batch） | https://arxiv.org/abs/1812.06162 | 知识确认，A5 §11.4 引用 |
+| A-10 | Scaling Laws for Transfer（Hernandez 等，2021，有效迁移数据量） | https://arxiv.org/abs/2102.01293 | 仅凭记忆，链接与常数待核对；A4 §11.21 引用 |
 
 ## Track B：Alignment
 
@@ -42,6 +43,10 @@ openai.com 对 curl、WebFetch 和内置浏览器返回 403，逐页打开需由
 | B-13 | CoT Monitoring | https://openai.com/index/chain-of-thought-monitoring/ | 知识确认 |
 | B-14 | GPT-Red 页面 | https://openai.com/index/unlocking-self-improvement-gpt-red/ | 搜索命中 |
 | B-15 | GPT-Red 论文 PDF | https://cdn.openai.com/pdf/gpt-red-automated-red-teaming-via-self-play-at-scale.pdf | 搜索命中 |
+| B-16 | Deep RL from Human Preferences 论文（Christiano 等，2017，与 DeepMind 合作） | https://arxiv.org/abs/1706.03741 | 打开确认（2026-10-15，HTML v4 全文核对） |
+| B-17 | PPO 论文（Schulman 等，2017） | https://arxiv.org/abs/1707.06347 | 打开确认（2026-10-15，abs 页；正文凭记忆） |
+| B-18 | openai/baselines（PPO 官方实现） | https://github.com/openai/baselines | 打开确认（2026-10-15，HTTP 200） |
+| B-19 | Fine-Tuning Language Models from Human Preferences（Ziegler 等，2019） | https://arxiv.org/abs/1909.08593 | 打开确认（2026-10-15，abs 页） |
 
 ## Track C：Reasoning
 
@@ -114,6 +119,9 @@ openai.com 对 curl、WebFetch 和内置浏览器返回 403，逐页打开需由
 | R-6 | A Mathematical Framework for Transformer Circuits（2021，Anthropic） | A5 §11.5 对照（两层 attention-only 模型里的 induction 电路，K-composition） | https://transformer-circuits.pub/2021/framework/index.html | 知识确认 |
 | R-7 | In-context Learning and Induction Heads（2022，Anthropic） | A5 §11.5 对照（ICL 机制假设、相变证据）；Semantic Scholar 2026-10-11 引用约 1,075，在 Anthropic LLM 论文里约第 8～9 位 | https://arxiv.org/abs/2209.11895 | 知识确认，引用数 API 取得 |
 | R-8 | Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks（Finn、Abbeel、Levine，2017） | A5 §11.15 对照（显式梯度式 meta-learning 与 ICL 的对照） | https://arxiv.org/abs/1703.03400 | 知识确认 |
+| R-9 | Trust Region Policy Optimization（Schulman 等，UC Berkeley，2015） | B1 前置（PPO 承接的瓶颈） | https://arxiv.org/abs/1502.05477 | 打开确认（2026-10-15，abs 页） |
+| R-10 | Sequence Level Training with RNNs（MIXER，Ranzato 等，Facebook，2015） | B1 §11.1 前史（LM 当策略做序列级 RL 早于 OpenAI） | https://arxiv.org/abs/1511.06732 | 待核验（凭记忆） |
+| R-11 | High-Dimensional Continuous Control Using Generalized Advantage Estimation（GAE，Schulman 等，UC Berkeley，2016） | B1 §11.3 前置（PPO 的优势估计与基线 V(s)） | https://arxiv.org/abs/1506.02438 | 待核验（凭记忆） |
 
 ## Rules
 

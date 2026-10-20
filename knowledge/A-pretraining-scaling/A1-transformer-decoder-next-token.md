@@ -7,7 +7,7 @@ status: canonical
 mastery: 1
 importance: 5
 created: 2026-09-13
-updated: 2026-09-27
+updated: 2026-10-15
 source_check: 2026-09-13
 sources:
   - https://arxiv.org/abs/1706.03762
@@ -634,9 +634,44 @@ flowchart TB
 
 ## 我曾经答错的地方
 
-- 2026-09-13 诊断：说不出 block 的子层顺序和 Q/K/V 的 shape；把 fine-tune 的核心差异说成计算量减少。
-- 2026-09-16 作业：target 序列写错（应为 input 右移一位）；softmax 算成 hardmax，交叉熵随之算错（正确值 0.878）。
-- 2026-09-17 E1：logits 用 d 而非 V 摊平，自行修正。
+### 2026-09-13 · decoder 结构与 fine-tune 的差异（诊断）
+- 题目：说出 decoder block 的子层顺序与 Q/K/V 的 shape；next-token 目标是什么；fine-tune 与从零训练的核心差异。
+- 我的答案（记录为摘要，原话未存）：交叉熵加防泄漏的 mask；block 结构与 shape 说不出；fine-tune 的差别是计算量减少。
+- 错在哪：目标没写成条件概率形式；不知道 block 子层；把 fine-tune 的核心说成省算力。
+- 正确答案：LN → 注意力 → 残差 → LN → MLP → 残差，Q/K/V 各 [B,T,d]，拆头后 [B,H,T,d/H]；目标是 −Σ log P(u_i ∣ u_{<i}; Θ)（§3）；fine-tune 的核心是无标注预训练的表征迁移到标注稀缺的任务（[[A2-sentiment-neuron-gpt-1]]）。
+
+### 2026-09-16 · target 序列与 softmax / CE（4-token 手推作业）
+- 题目：给定 4 个 token 的 input，写出 target 序列；对 logits [2,0,0,2,0] 算 softmax 与正确类的交叉熵。
+- 我的答案：target = 4 2 3 0；softmax = [0.5, 0, 0, 0.5, 0]，CE = 0.3466（未写信心）。
+- 错在哪：target 当成重排，不是 input 右移一位；softmax 当成只保留最大值的 hardmax，忘了 e⁰ = 1。
+- 正确答案：target = [4, 1, 3, 0]；softmax = [0.416, 0.056, 0.056, 0.416, 0.056]，CE = −ln 0.416 = 0.878（§3）。同日重做通过。
+
+### 2026-09-17 · 交叉熵的摊平维度（E1 填空）
+- 题目：把 [B,T,V] 的 logits 与 [B,T] 的 targets 摊平后送入 cross_entropy。
+- 我的答案：logits 按 d 摊平。
+- 错在哪：最后一维应是词表 V，不是隐层 d。
+- 正确答案：`logits.reshape(-1, V)` 与 `targets.reshape(-1)`。自行修正。
+
+### 2026-09-28 · block 数据流填空（复测，第二档）
+- 题目：B=2、T=8、d=64、h=4、V=65，沿 13 步填操作名与 shape：每头 Q、注意力分数矩阵、第二个子层的名称、target 的 shape 等。
+- 我的答案：每头 Q [2,8,64]；分数矩阵 [2,8,8]；第二子层"输出转换"；第 ⑦ 步漏填；target [2,8,65]。其余（token embedding [2,8,64]、MLP 中间层 [2,8,256]、logits [2,8,65]、target = t+1）答对。未写信心。
+- 错在哪：把多头当单头，没沿特征维拆头；不知道第二子层是 MLP；把 target 的 shape 写成了 logits 的 shape。
+- 正确答案：拆头后 Q 是 [B,H,T,d/H] = [2,4,8,16]；分数 [B,H,T,T] = [2,4,8,8]；第二子层是 MLP（d → 4d → d）；target 是 [B,T] = [2,8] 的整数索引（§2.2）。
+
+### 2026-09-28 · softmax + CE 手算（复测）
+- 题目：logits [2,1,0]，正确类 0，算 softmax 各项与交叉熵。
+- 我的答案：−log(e²/(e+e²+1))，未算数值，未注明对数底，未写信心。
+- 错在哪：式子对但停在式子；没说明用自然对数。
+- 正确答案：p = [0.665, 0.245, 0.090]，损失 −ln 0.665 = 0.408（§11.9）。
+## 图板与图解页
+
+本卡相关的 Artifact 页面，全表见 [[artifacts]]（私有链接，需登录 claude.ai）。
+
+- [困惑度是几面骰子](https://claude.ai/artifact/KYwj7isSTGng4vsLbwBdYz)（ELI5 图解，2026-09-28）：可拖动概率的骰子演示，E1 / GPT-2 词表尺子。对应 §11.6。
+- [一个 nat 有多惊讶](https://claude.ai/artifact/Psi2yZUrFa4kVJccehLfhh)（ELI5 图解，2026-09-24）：nat / bit / 困惑度三种刻度。对应 §11.6、§11.9。
+- [一个 token 碰到多少参数](https://claude.ai/artifact/RvHqmEJq4pzTaAbv55BnJ2)（ELI5 图解，2026-09-28）：GPT-2 small 按 wte / wpe / 12 层记账。对应 §11.7。
+- [Softmax 数几次](https://claude.ai/artifact/99E9zJgrQDsNnMLvgKyoDN)（ELI5 图解（交互），2026-09-28）：H × T 次；T、H、D 滑块记账。对应 §11.8。
+- [注意力头是什么](https://claude.ai/artifact/Hf8HWThP6TwHa6dDF9g5nu)（ELI5 图解，2026-10-11）：head 与 Q/K/V 的关系。对应 §11.10。
 
 ## 掌握证据
 

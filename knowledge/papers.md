@@ -1,7 +1,7 @@
 ---
 title: 论文台账
 level: 1
-updated: 2026-10-11
+updated: 2026-10-15
 tags: [openai, hub, papers]
 ---
 
@@ -30,15 +30,21 @@ tags: [openai, hub, papers]
 | P-13 | Rethinking the Role of Demonstrations（Min 等） | 2022 | 非 OpenAI，对照 | A5 | 标签打乱实验结论 | 仅引用 |
 | P-14 | Lost in the Middle（Liu 等） | 2023 | 非 OpenAI，对照 | A5 | 主结论 | 仅引用 |
 | P-15 | Scaling Laws for Autoregressive Generative Modeling（Henighan） | 2020 | OpenAI | A4 | 无（凭记忆） | 仅提及 |
-| P-16 | Scaling Laws for Transfer（Hernandez） | 2021 | OpenAI | A4 | 无（凭记忆） | 仅提及 |
+| P-16 | Scaling Laws for Transfer（Hernandez） | 2021 | OpenAI（A-10） | A4 | 无（凭记忆） | 仅引用 |
 | P-17 | Deep Learning Scaling is Predictable, Empirically（Hestness，百度） | 2017 | 非 OpenAI，前史 | A3 | 无 | 仅提及 |
 | P-18 | WebGPT | 2021 | OpenAI | A5 提及，D1 待学 | 无 | 未学 |
 | P-19 | Direct Preference Optimization | 2023 | 非 OpenAI，对照（R-3） | B3 | 无 | 未学 |
 | P-20 | Self-Consistency Improves Chain of Thought Reasoning | 2022 | 非 OpenAI，对照（R-4） | C3 | 无 | 未学 |
-| P-21 | Training language models to follow instructions with human feedback（InstructGPT） | 2022 | OpenAI | A5 §11.8 提及，B3 待学 | 无 | 仅提及 |
+| P-21 | Training language models to follow instructions with human feedback（InstructGPT） | 2022 | OpenAI | A5 §11.8 提及，B1 §11.3～11.5、11.9，B3 待学 | §3.5、图 2、附录 C.4（凭记忆） | 仅引用 |
 | P-22 | Recursive Deep Models for Semantic Compositionality over a Sentiment Treebank（SST，Socher 等） | 2013 | 非 OpenAI，数据集来源 | A2 评测、E3 任务 | 无 | 仅提及 |
 | P-23 | Are Emergent Abilities of Large Language Models a Mirage?（Schaeffer 等） | 2023 | 非 OpenAI，对照（R-6） | A5 §11.12 | 主结论 | 仅引用 |
 | P-24 | Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks（MAML，Finn 等） | 2017 | 非 OpenAI，对照（R-8） | A5 §11.15 | §1、§2、Algorithm 1、式 (1)～(3)、图 1 | 仅引用 |
+| P-25 | Deep Reinforcement Learning from Human Preferences（Christiano 等） | 2017 | OpenAI（B-16，与 DeepMind 合作） | B1 | 摘要、§2.2 全部、§3.1～3.3、附录 A 的节奏与超参 | 已学（检查题待答） |
+| P-26 | Proximal Policy Optimization Algorithms（Schulman 等） | 2017 | OpenAI（B-17），代码 openai/baselines | B1 | §2、§3 式 (6)(7)、§4 式 (8)(9)、§5 Algorithm 1、§6 表 1～2（表 1 小数值待核对） | 已学（检查题待答） |
+| P-27 | Trust Region Policy Optimization（Schulman 等，UC Berkeley） | 2015 | 非 OpenAI，前置（R-9） | B1 | 无 | 仅提及 |
+| P-28 | Fine-Tuning Language Models from Human Preferences（Ziegler 等） | 2019 | OpenAI（B-19） | B1 提及，B2 待学 | 摘要 | 仅提及 |
+| P-29 | Sequence Level Training with Recurrent Neural Networks（MIXER，Ranzato 等） | 2015 | 非 OpenAI，前史（R-10） | B1 §11.1 | 无（凭记忆） | 仅提及 |
+| P-30 | High-Dimensional Continuous Control Using Generalized Advantage Estimation（GAE，Schulman 等） | 2016 | 非 OpenAI，前置（R-11） | B1 §11.3 | §3 式 (11)～(16) 的 δ_t 与 Â_t（凭记忆） | 仅引用 |
 
 ## 逐篇
 
@@ -233,13 +239,14 @@ tags: [openai, hub, papers]
 ### P-15、P-16 Scaling Laws for Autoregressive Generative Modeling（Henighan 等，2020）；Scaling Laws for Transfer（Hernandez 等，2021），OpenAI
 
 - 来源级别：OpenAI 官方。
-- 课程节点：A4 §9、§11.13
+- 课程节点：A4 §9、§11.13、§11.21
 - 已读章节：无，凭记忆写入，待核对。
 
 | 知识点 | 引用了什么 |
 |---|---|
 | [[A4-scaling-laws]] §9 | 幂律扩展到图像、视频、数学与迁移学习（待核对） |
 | [[A4-scaling-laws]] §11.13 | 不可约项的讨论（待核对） |
+| [[A4-scaling-laws]] §11.21 | P-16：有效迁移数据 $D_T = k(D_F)^{\alpha}N^{\beta}$，文本→代码 α≈0.18、β≈0.38；微调数据越少、模型越大，迁移占比越大（凭记忆，待核对） |
 
 ### P-17 Deep Learning Scaling is Predictable, Empirically（Hestness 等，百度，2017）
 
@@ -265,10 +272,16 @@ tags: [openai, hub, papers]
 
 - 来源级别：OpenAI 官方（B-4）。
 - 课程节点：A5 §11.8 提及；B3 [[B3-instructgpt-chatgpt]] 待学
-- 已读章节：无。
+- 已读章节：§3.5 三步方法概述与图 2；附录 C.4 RLHF 的 value 初始化（均凭记忆，待核对）。
 
 | 知识点 | 引用了什么 |
 |---|---|
+| [[B1-ppo-human-preferences-2017]] §11.3 | PPO 的 value 网络从 RM 初始化（附录 C.4，待核对） |
+| [[B1-ppo-human-preferences-2017]] §11.4 | 价值模型是独立于策略的另一份 Transformer，从 RM 初始化（附录 C.4，待核对） |
+| [[B1-ppo-human-preferences-2017]] §11.5 | 三步流程 SFT → RM → PPO（图 2）；RM 从 SFT 初始化并对多条回答排序训练；PPO 阶段的 KL 惩罚与 PPO-ptx 预训练混合（§3.5，凭记忆） |
+| [[B1-ppo-human-preferences-2017]] §11.9 | PPO 阶段 batch 512、minibatch 64、256k episode，价值模型从 RM 初始化（附录 C.4，凭记忆，待核对）；PPO-ptx 把预训练交叉熵加回目标（§3.5）；每 batch 的 PPO epoch 数论文未明说 |
+| [[B1-ppo-human-preferences-2017]] §11.11 | 式 (2) RL 目标里的序列级 KL 罚项 −β log(π^RL(y|x)/π^SFT(y|x))，逐 token 的 r_t 是它的逐项拆分（凭记忆，待核对式号） |
+| [[B1-ppo-human-preferences-2017]] §11.11 | RM 损失对平移不变，RL 前加偏置归一化使标注员示范的平均分为 0（§3.5 / 附录，凭记忆待核对） |
 | [[A5-gpt-3-in-context-learning]] §11.8 | 按指令行事的能力来自 SFT + RLHF 后训练；目标是让 zero-shot 指令直接可用 |
 
 ### P-22 Recursive Deep Models for Semantic Compositionality over a Sentiment Treebank（Socher 等，斯坦福，2013）
@@ -302,6 +315,75 @@ tags: [openai, hub, papers]
 | 知识点 | 引用了什么 |
 |---|---|
 | [[A5-gpt-3-in-context-learning]] §11.15 | 图 1：一个初始化到多个任务最优点都只差几步；Algorithm 1 与式 (1)～(3)：内循环 support 集一步梯度、外循环 query 集损失对初始化求导（二阶）；first-order 近似；分类 / 回归 / RL 三类实验说明 model-agnostic |
+
+### P-25 Deep Reinforcement Learning from Human Preferences（Christiano、Leike、Brown、Martic、Legg、Amodei，OpenAI 与 DeepMind，2017）
+
+- 来源级别：OpenAI 官方（B-16，arXiv 1706.03741，2026-10-15 打开 HTML v4 核对）。
+- 课程节点：B1（2026-10-15）
+- 已读章节：摘要；§2.2 方法（三进程、策略优化、偏好采集、式 (1) 与损失、三处修正、query 选择）；§3.1 MuJoCo 与 Atari 结果；§3.2 新行为；§3.3 消融；附录 A 的节奏与超参。未读：§1 相关工作细节、附录 B 标注说明全文。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §2.1 | 三进程异步结构与数据流向；人看 1～2 秒片段三选一；选 query 用 ensemble 方差；在线更新为防策略 exploit 学到的 reward |
+| [[B1-ppo-human-preferences-2017]] §3.1 | 式 (1) 偏好概率；交叉熵损失；μ 的三种取值；脚注 3 无折扣；Bradley–Terry 与 Elo 类比；ensemble 3 个、1/e 留出、ℓ2 调到验证损失 1.1～1.5 倍、10% 随机作答 |
+| [[B1-ppo-human-preferences-2017]] §4 | 每 10 个 RL 步 1 条标签；最近 3,000 条标签循环；候选抽 10 倍；Atari 用 A2C、MuJoCo 用 TRPO，只调熵奖励；reward 归一化 |
+| [[B1-ppo-human-preferences-2017]] §5、§7 | 后空翻 900 条、不到一小时；Enduro 并排约 1,300 条、400 万帧；MuJoCo 700 条、Atari 5,500 条；真人约等于少 40% 的合成标签；Ant 真人更好的 reward shaping 解释；人类反馈不到 1% 交互 |
+| [[B1-ppo-human-preferences-2017]] §8 | 方差选 query 在某些任务不如随机（§3.3） |
+
+### P-26 Proximal Policy Optimization Algorithms（Schulman、Wolski、Dhariwal、Radford、Klimov，OpenAI，2017）
+
+- 来源级别：OpenAI 官方（B-17，arXiv 1707.06347；代码 openai/baselines，B-18）。2026-10-15 只打开 abs 页核对题名与摘要，HTML 版不可用，PDF 文本未能抽取；公式与超参凭记忆，表 1 小数值标待核对。
+- 课程节点：B1（2026-10-15）
+- 已读章节：摘要；§2 背景（策略梯度、TRPO）；§3 式 (6) L^CPI 与式 (7) L^CLIP、图 1；§4 自适应 KL 惩罚；§5 式 (9) 总目标、式 (10)～(12) 截断 GAE 与 Algorithm 1；§6 表 1 MuJoCo 对比、§6.2 与其他算法对比、§6.3 Atari 表 2。未读：附录各环境超参细节逐项。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §2.2 | 概率比 r_t 的定义；式 (7) 的 min 与 clip；ε = 0.2；悲观下界；clip 四种情况 |
+| [[B1-ppo-human-preferences-2017]] §3.2 | 式 (9) 总目标、c₁、c₂、L^VF；自适应 KL 惩罚版本及 β 的调法；GAE γ 0.99、λ 0.95 |
+| [[B1-ppo-human-preferences-2017]] §4 | Algorithm 1：N 个 actor、T 步、K 个 epoch、minibatch；MuJoCo T 2048、K 10、batch 64、Adam 3×10⁻⁴；Atari 8 actor × 128 步、c₂ 0.01 |
+| [[B1-ppo-human-preferences-2017]] §11.8 | §3 式 (6) L^CPI 的重要性采样来源与 conservative policy iteration 的命名；Algorithm 1 的 rollout / K-epoch 交替 |
+| [[B1-ppo-human-preferences-2017]] §11.9 | Algorithm 1：同一批数据用 K 个 epoch 的 minibatch 更新，K 在论文实验里取 3（Atari）到 10（MuJoCo）；每个 minibatch 重算 ρ_t |
+| [[B1-ppo-human-preferences-2017]] §11.10 | 式 (9) 的 L^VF 平方误差项与 c₁；式 (11)(12) 截断 GAE：Â_t = Σ (γλ)^l δ_{t+l}，末尾 δ 往前按 (γλ)^(T−t) 衰减 |
+| [[B1-ppo-human-preferences-2017]] §11.4 | §5：策略与 value 共享参数时用式 (9) 的合并损失；Atari CNN 躯干、MuJoCo 2×64 MLP（凭记忆） |
+| [[B1-ppo-human-preferences-2017]] §11.3 | §5 式 (10)～(12)：δ_t = r_t + γV(s_{t+1}) − V(s_t)，截断 GAE 求 Â_t；L^VF 的回报目标 V_t^targ |
+| [[B1-ppo-human-preferences-2017]] §7、§10.2 | 表 1：clip ε=0.2 最佳、无约束发散（数值待核对）；MuJoCo 7 环境领先 A2C、CEM、vanilla PG、TRPO；Atari 49 游戏全程均分领先、最后 100 局 ACER 更好；TRPO 不兼容共享网络与 dropout |
+
+### P-27 Trust Region Policy Optimization（Schulman、Levine、Moritz、Jordan、Abbeel，UC Berkeley，2015）
+
+- 来源级别：非 OpenAI，前置（R-9）。
+- 课程节点：B1 提及（PPO 承接的瓶颈）。
+- 已读章节：无，只引用摘要层面的结论（KL 约束保证单调改进、二阶求解）。
+
+### P-28 Fine-Tuning Language Models from Human Preferences（Ziegler 等，OpenAI，2019）
+
+- 来源级别：OpenAI 官方（B-19，arXiv 1909.08593，2026-10-15 打开 abs 页）。
+- 课程节点：B1 §9 提及，B2 待学。
+- 已读章节：摘要（四个语言任务；续写 5,000 条比较、摘要 60,000 条）。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §9 | 2019 年把 RM + RL 搬到 GPT-2：续写 5,000 条、摘要 60,000 条比较；优化器 PPO，加对初始策略的 KL 惩罚 |
+| [[B1-ppo-human-preferences-2017]] §11.1 | LM 当策略的首次 OpenAI 合体：reward 从人类比较学、PPO 加 KL（MDP 定义的变化是课程归纳，非论文原文） |
+
+### P-29 Sequence Level Training with Recurrent Neural Networks（MIXER，Ranzato 等，Facebook，2015）
+
+- 来源级别：非 OpenAI，前史（R-10）。凭记忆引用，待核对。
+- 课程节点：B1 §11.1 提及。
+- 已读章节：无。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.1 | "LM 当策略、用序列级指标（BLEU）做 REINFORCE"早于 OpenAI 2019 年的合体 |
+
+### P-30 High-Dimensional Continuous Control Using Generalized Advantage Estimation（Schulman、Moritz、Levine、Jordan、Abbeel，UC Berkeley，2016）
+
+- 来源级别：非 OpenAI，前置（R-11）。凭记忆引用，待核对公式编号。
+- 课程节点：B1 §11.3（2026-10-15）。
+- 已读章节：§3 的 δ_t 定义与 GAE(γ, λ) 的指数加权和；λ 在 TD(0) 与蒙特卡洛回报之间插值的解释。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.3 | 优势 = 实际回报 − 基线 V(s)；减去不依赖动作的基线不改变梯度期望；λ 的偏差—方差权衡 |
 
 ### P-19 Direct Preference Optimization（Rafailov 等，2023）
 

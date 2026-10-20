@@ -7,7 +7,7 @@ status: canonical
 mastery: 1
 importance: 5
 created: 2026-09-28
-updated: 2026-10-11
+updated: 2026-10-15
 source_check: 2026-09-28
 sources:
   - https://openai.com/index/language-models-are-few-shot-learners/
@@ -696,8 +696,37 @@ E3（`experiments/in-context-learning/`）：GPT-2 四个开源尺寸（124M →
 
 ## 我曾经答错的地方
 
-- 2026-10-11 检查题 1：任务信息的路径只说到"token 进入"，没说到注意力从示例位置读取；把 KV cache 当成前向结束后的最终去向。正解：KV cache 只在本次生成期间缓存示例的 K、V，生成完即丢弃，不进权重（§11.1、§11.2）。
-- 2026-10-11 检查题 3：条件 × 读法二维表答不出（A3 同一短板第三次）。正解见 [[A3-gpt-2-zero-shot]] §2.3 与本卡 §10 末段：E3 的 SST-2 8-shot 与 zero-shot 都是打分式，加法是生成式 few-shot，第四格生成式 zero-shot 对应 GPT-3 的 zero-shot TriviaQA 或翻译。
+### 2026-09-13 · in-context learning 的定义（诊断）
+- 题目：什么是 in-context learning？
+- 我的答案（记录为摘要，原话未存）：不知道。
+- 错在哪：术语未识别。
+- 正确答案：把任务示例写进上下文，模型靠续写完成新输入，全程不更新参数（§11.3）。
+
+### 2026-10-11 · few-shot 为何叫 learning 却不更新参数（检查题 1）
+- 题目：GPT-3 的 few-shot 为什么叫 in-context "learning" 却不更新参数？任务信息从哪条路径进入模型，前向结束后它去了哪里？
+- 我的答案："few-shot 中给了几个回答示例，模型从 context 中学习回答方式，只不过不更新参数。任务信息从 token 进入了模型，前向结束后，进入了 kv cache？"（未写信心）。
+- 错在哪：路径只说到"token 进入"，没说到注意力从示例位置读取；把 KV cache 当成前向结束后的最终去向。
+- 正确答案：示例 token 在每层算出 K、V，查询位置的注意力读取它们、改写残差流、改变 logits；KV cache 只在本次生成期间缓存这些 K、V，生成完即丢弃，不进权重，下一个查询要重新给示例（§11.1、§11.2）。
+
+### 2026-10-11 · 只有 175B 一个尺寸能否得出"ICL 随规模增强"（检查题 2）
+- 题目：如果论文只训了 175B 并报告了 zero / one / few-shot 分数，能不能得出这个结论？实验设计至少需要什么？
+- 我的答案："不能，需要多几个不同尺寸的模型"（未写信心）。
+- 错在哪：核心对，但少了三个条件。
+- 正确答案：所有尺寸同一套评测；看的指标是 few-shot 与 zero-shot 的差距随 N 是否单调变宽，不是分数本身上升；尺寸跨数量级并控制示例抽样噪声（§6、§7）。
+
+### 2026-10-11 · 条件 × 读法二维表归格（检查题 3）
+- 题目：把 E3 的 SST-2 打分式 8-shot、SST-2 打分式 zero-shot、两位数加法生成式 4-shot 放进 A3 的"条件 × 读法"二维表；第四格是什么，举一个 GPT-3 论文里的任务。
+- 我的答案："不懂"。
+- 错在哪：条件（给不给示例）与读法（打分 / 生成）两个维度没有分开，A3 同一短板第三次（09-19、09-27、10-11）。
+- 正确答案：打分 × few-shot = SST-2 8-shot；打分 × zero-shot = SST-2 zero-shot；生成 × few-shot = 加法 4-shot；第四格生成 × zero-shot = GPT-3 的 zero-shot TriviaQA（64.3，自由生成答案）或 zero-shot 翻译（[[A3-gpt-2-zero-shot]] §2.3、本卡 §10 末段）。
+## 图板与图解页
+
+本卡相关的 Artifact 页面，全表见 [[artifacts]]（私有链接，需登录 claude.ai）。
+
+- [GPT-3 In-context Learning 图板](https://claude.ai/artifact/Y83YHgaWwLJeEfaCwShnuX)（本节图板，2026-09-28）：meta-learning 框架、few-shot 一次前向、fine-tune vs in-context、主线因果位置、E3 设计。对应 全卡（7 张，4 张入卡）。
+- [GPT 一二三代](https://claude.ai/artifact/BbXMezmJyrEVJuUiyuXUmG)（ELI5 图解，2026-10-11）：脑子大小、数据量、三种用法、参数表。对应 §11.9。
+- [Induction Heads 图画书](https://claude.ai/artifact/Upa1wVEfQ4LBn2ahwG3aNh)（ELI5 图解，2026-10-11）：两个 head 配合完成「抄前文」的电路。对应 §11.5。
+- [MAML 小画书](https://claude.ai/artifact/XNdkqWJ1ezvEF5oFaBiH66)（ELI5 图解，2026-10-13）：显式梯度式 meta-learning 与 ICL 对照（非 OpenAI）。对应 §11.15。
 
 ## 掌握证据
 

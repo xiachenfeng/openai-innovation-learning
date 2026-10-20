@@ -1,7 +1,7 @@
 ---
 title: OpenAI 创新知识库
 level: 0
-updated: 2026-10-11
+updated: 2026-10-15
 tags: [openai, hub]
 ---
 
@@ -36,6 +36,10 @@ flowchart LR
 ## 论文台账
 
 课程用到的每篇论文读到哪、哪张卡引用了它的什么：[[papers|论文台账]]。
+
+## 图板与图解页
+
+每次讲解发布的 Artifact 页面（本节图板、追问图板、ELI5 图解）的登记表：[[artifacts|图板与图解页台账]]。链接私有，需登录 claude.ai。
 
 ## 术语表
 
