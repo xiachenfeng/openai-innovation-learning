@@ -125,6 +125,7 @@ tags: [openai, hub, papers]
 | [[A4-scaling-laws]] §11.14 | 6N 的来源：前向 2N、反向 4N |
 | [[A5-gpt-3-in-context-learning]] §11.4 | 附录经验拟合 lr(N) ≈ 0.003239 − 0.0001395·ln N（凭记忆待核对）；B_crit 用于解释 GPT-3 的 batch 表 |
 | [[A3-gpt-2-zero-shot]] §11.4 | Kaplan 引用 Hestness 2017 为前史 |
+| [[A4-scaling-laws]] §2.1 | 写法分析：指数为主、常数无普适意义；形状参数只影响几个百分点（图 5～6）；§4 L(N, D) 按三条原则选形式（词表缩放、两端退回单变量幂律、对 1/D 可展开，凭记忆待核对）；临界 batch 借用梯度噪声尺度 |
 
 ### P-6 Language Models are Few-Shot Learners（Brown 等，OpenAI，2020）
 
@@ -347,12 +348,17 @@ tags: [openai, hub, papers]
 | [[B1-ppo-human-preferences-2017]] §11.4 | §5：策略与 value 共享参数时用式 (9) 的合并损失；Atari CNN 躯干、MuJoCo 2×64 MLP（凭记忆） |
 | [[B1-ppo-human-preferences-2017]] §11.3 | §5 式 (10)～(12)：δ_t = r_t + γV(s_{t+1}) − V(s_t)，截断 GAE 求 Â_t；L^VF 的回报目标 V_t^targ |
 | [[B1-ppo-human-preferences-2017]] §7、§10.2 | 表 1：clip ε=0.2 最佳、无约束发散（数值待核对）；MuJoCo 7 环境领先 A2C、CEM、vanilla PG、TRPO；Atari 49 游戏全程均分领先、最后 100 局 ACER 更好；TRPO 不兼容共享网络与 dropout |
+| [[B1-ppo-human-preferences-2017]] §2.3 | 理论到近似的链条：§2.2 称理论支持惩罚而非约束、难在选 β（凭记忆待核对措辞）；§4 自适应 β 作为回应；§3 L^CLIP 是 L^CPI 的悲观下界；表 1 消融定取舍 |
 
 ### P-27 Trust Region Policy Optimization（Schulman、Levine、Moritz、Jordan、Abbeel，UC Berkeley，2015）
 
 - 来源级别：非 OpenAI，前置（R-9）。
 - 课程节点：B1 提及（PPO 承接的瓶颈）。
 - 已读章节：无，只引用摘要层面的结论（KL 约束保证单调改进、二阶求解）。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §2.3 | 定理 1 下界 η(π̃) ≥ L_π(π̃) − C·D_KL^max，C = 4εγ/(1−γ)²；实用版把惩罚换成平均 KL 约束 δ、共轭梯度加线搜索（凭记忆，原文未读） |
 
 ### P-28 Fine-Tuning Language Models from Human Preferences（Ziegler 等，OpenAI，2019）
 

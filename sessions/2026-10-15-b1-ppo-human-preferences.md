@@ -30,7 +30,7 @@ B1 mastery 0（09-13 诊断：不知 PPO、RM、RLHF）。A5 mastery 1，E3 未�
 ## Questions Asked
 
 检查题四道（Q0 衔接 + Q1～Q3，见 Next Step），待答。
-追问：11.1 PPO 用到 LM 是否"从机器人跨到 LLM"；11.2 next-token 逐字 vs PPO 轨迹级偏好；11.3（另一 session，/eli5 PPO 绘本之后）"比平时高分就多做"的"平时"怎么定义 → 基线 V(s_t) 与 GAE；11.4 PPO 的网络图与 value head → 两种接法（共享躯干 / 独立价值模型），图追加到基线图板。 10-16 追问 11.5 LLM 里 PPO 的整体流程（InstructGPT 三步 + 一轮循环），两张图再追加到基线图板。 追问 11.6 逐 token 的 RM / KL / value 分数怎么合成总 loss（图 6 + T=4 数值例子，追加到基线图板）。 追问 11.7 PPO 是否在 OpenAI 引用前十（Semantic Scholar API，2026-10-16，第 3）。 追问 11.8 rollout 与 update 的交替、概率比 ρ_t 的本质（图 7、图 8 追加到基线图板）。
+追问：11.1 PPO 用到 LM 是否"从机器人跨到 LLM"；11.2 next-token 逐字 vs PPO 轨迹级偏好；11.3（另一 session，/eli5 PPO 绘本之后）"比平时高分就多做"的"平时"怎么定义 → 基线 V(s_t) 与 GAE；11.4 PPO 的网络图与 value head → 两种接法（共享躯干 / 独立价值模型），图追加到基线图板。 10-16 追问 11.5 LLM 里 PPO 的整体流程（InstructGPT 三步 + 一轮循环），两张图再追加到基线图板。 追问 11.6 逐 token 的 RM / KL / value 分数怎么合成总 loss（图 6 + T=4 数值例子，追加到基线图板）。 追问 11.7 PPO 是否在 OpenAI 引用前十（Semantic Scholar API，2026-10-16，第 3）。 追问 11.8 rollout 与 update 的交替、概率比 ρ_t 的本质（图 7、图 8 追加到基线图板）。 10-21 追问：LM head 具体是什么组件 → 写入 A1 §11.14，B1 §11.13 链接；同日追问"全模型参数分几块"，参数分区图（GPT-2 small 账本）写入 A1 §11.14，并按用户要求单独发布为图解页 https://claude.ai/artifact/GmGabuBSj1Aca5xJhwQgNy（V-27），已从本节图板移除；再追问"I have a → cat 的推理过程"，写入 A1 §11.15 并发布图解页 https://claude.ai/artifact/7c9XT52iZQhCDfJiuQsVg3（V-28）。
 
 ## My Answers
 
@@ -84,6 +84,10 @@ B1 mastery 0（09-13 诊断：不知 PPO、RM、RLHF）。A5 mastery 1，E3 未�
 ## Review Tasks
 
 沿用 review-queue：A5 / A3 / A2 / A4 / A1 复测块仍过期待做，与 Track B 并行。
+
+## 待办更新（state/todo.md）
+
+2026-10-21 建清单：T-1 E3、T-2～T-5 过期复测、T-6 Track A 因果表、T-7 B1 复述、T-8 B1 四道检查题、T-9 删根目录空文件；全部未完成。规则写入 AGENTS.md「待办练习清单与及时反馈」。
 
 ## Files Updated
 

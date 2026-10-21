@@ -65,7 +65,7 @@
 - `curriculum.md`：四条主线课程
 - `timeline.md`
 - `inbox.md`
-- `state/`
+- `state/`（含 `todo.md` 待办练习清单）
 - `knowledge/<track>/<node>-<concept>.md`（如 `A5-gpt-3-in-context-learning.md`），最多两级：第 1 级是与文件夹同名的主线 MOC，第 2 级是概念卡，文件名以课程节点编号开头；canonical/candidate 用 frontmatter 的 `status` 区分。规范见 `knowledge/README.md`
 - `knowledge/papers.md`：论文台账，每篇论文读到哪、哪张卡引用了它的什么。规则见 Knowledge Extraction 的「论文台账」
 - `sessions/`
@@ -81,8 +81,9 @@
 1. 获取日期；先 `git pull --ff-only origin main`，把学习者从云主机推上来的代码与结果 CSV 拉下来，pull 失败或有冲突要立刻报告；
 2. 读取 curriculum、timeline、state、source status、inbox 和最近 sessions；
 3. 检查本周周报，并列出 `state/review-queue.md` 里所有已过期项（Review After 早于今天）；
-4. 用不超过十行报告当前阶段、薄弱点、待复习项、source freshness 和推荐任务；有过期复测项时推荐任务第一条必须是复测块，不推荐新节点（见「学习者输出优先」第 2 条）；
-5. 用户确认前不做大规模修改。
+4. 读 `state/todo.md`，把所有未完成的待办练习原样列出（编号、要做什么、在哪），放在报告最前面；当天第一次 session 必列，同一天后续 session 只列新增或仍未完成的；
+5. 用不超过十行报告当前阶段、薄弱点、待复习项、source freshness 和推荐任务；有过期复测项时推荐任务第一条必须是复测块，不推荐新节点（见「学习者输出优先」第 2 条）；
+6. 用户确认前不做大规模修改。
 
 ---
 
@@ -95,7 +96,7 @@
 3. 对比类内容（fine-tune vs ICL、ORM vs PRM、单 agent vs multi-agent）用左右并列的两张图或一张对照表；
 4. 每条主线结束时产出一张"主线因果图"，节点是创新，边上写"解决了什么瓶颈"；
 5. 图保存进知识卡的"图解"段，不只留在对话里；
-6. 聊天窗口不渲染 mermaid 代码块（只显示源码）。每次 session 讲解涉及的图，用 Artifact 发布一个"本节图板"页面（`<pre class="mermaid">` 原生渲染），聊天里给链接并用一句话说明每张图讲什么；同一 session 内后续的图追加到同一个图板重新发布，不新建。知识卡里保留同一份 mermaid 源码，由 Obsidian 渲染。需要交互（如调 budget 看 pass@k 曲线）时同样用 Artifact；图板里的 mermaid 不用 `~~~` 不可见连线（claude.ai 的渲染器行为同 mermaid 9.x，用了整块显示成源码且无报错；知识卡里照用，Obsidian 支持），标题节点改用普通 `-->` 或给 subgraph 写真实标题，发布前用无头 Chrome 加 mermaid 9.4 的 `parse` 把全部块过一遍；发布后立刻把链接登记进 `knowledge/artifacts.md`（V-编号递增）并写入对应概念卡的「图板与图解页」一节与 MOC 的同名表，规则见 `knowledge/README.md`；`/eli5` 生成的图解页同样登记；
+6. 聊天窗口不渲染 mermaid 代码块（只显示源码）。每次 session 讲解涉及的图，用 Artifact 发布一个"本节图板"页面（`<pre class="mermaid">` 原生渲染），聊天里给链接并用一句话说明每张图讲什么；同一 session 内后续的图追加到同一个图板重新发布，不新建。知识卡里保留同一份 mermaid 源码，由 Obsidian 渲染。需要交互（如调 budget 看 pass@k 曲线）时同样用 Artifact；图板里的 mermaid 不用 `~~~` 不可见连线（claude.ai 的渲染器行为同 mermaid 9.x，用了整块显示成源码且无报错；知识卡里照用，Obsidian 支持），标题节点改用普通 `-->` 或给 subgraph 写真实标题；图板里换行照旧写 `<br/>`（线上会被吃掉、两行连成一行，接受；连行处名字与形状之间加标点），**不要**写成 `&lt;br/&gt;`（线上页面打不开，2026-10-21）；发布前跑 `python3 tools/mermaid-check.py 页面.html`，按线上渲染脚本的读法用 mermaid 9.4 与 11 渲染全部块；发布后立刻把链接登记进 `knowledge/artifacts.md`（V-编号递增）并写入对应概念卡的「图板与图解页」一节与 MOC 的同名表，规则见 `knowledge/README.md`；`/eli5` 生成的图解页同样登记；
 7. 图和数学只用 Obsidian 原生支持的 mermaid 与 LaTeX，仓库里不放图片文件；配色、节点形状、记号约定见 `knowledge/README.md`。
 8. **知识卡里的图必须能在 16 寸 MacBook Pro 上一屏看全，并能整张印在 A4 纸上**（Obsidian 导出 PDF 不缩放，超宽部分直接裁掉）。规则：
    - 一律 `flowchart TB` 竖向排列，不用 LR；
@@ -264,13 +265,22 @@
 
 ---
 
+## 待办练习清单与及时反馈（强制）
+
+2026-10-21 用户要求。目的：学习者做过的东西太少，布置过的练习散落在 session、review queue 和实验记录里，没人追。
+
+1. **一份清单。** `state/todo.md` 记录所有需要学习者动手的事：检查题、复述、实验填空与运行、复测、因果表、维护操作。教练每布置一项当场加一行（编号 T-n 递增、布置日期、类型、节点、要做什么、在哪），不等 session 结束；学习者完成后填完成日期，不删行。review queue 里的复测项也要在清单里有对应行。
+2. **每天先提醒。** Session Start 第 4 步：当天第一次 session 把未完成项原样列在报告最前面。清单为空才可以不列。
+3. **需要学习者反馈的事当场提、放在回复末尾。** 凡是下一步要等学习者给东西（答题、写信心、复述、跑实验、填因果表、二选一的决定），当轮回复的最后一段必须是「需要你做的」清单，逐条写清做什么、怎么交；不夹在讲解中间，不留到下一轮。学习者没给之前，教练不主动开始新的讲解内容，可以回答追问。
+4. **布置过就要追。** 同一项在清单里超过 7 天未完成，Session Start 的提醒里单独标「已过期」；超过 14 天，教练在报告里问一次是否取消或改期，由学习者决定。
+
 ## 章节结束：主动提示换 session
 
 一个课程节点（如 A2）讲完十个 lens、检查题评完分、知识卡与 state 写好之后，教练必须在回复末尾主动提示：**"本节结束，建议新开一个 session 再进入下一节"**，并附一句下一节的名称与准备事项（如要先跑的实验）。理由：一个节点一个 session，上下文干净、session 记录一节一份、便于按节回溯。用户说"继续"才在当前 session 讲下一节，不主动跨节。追问、复测、实验结果解读属于当前节，不触发提示。
 
 ## Session End
 
-1. 更新 state；
+1. 更新 state（含 `state/todo.md`：本次新布置的加行、完成的填日期）；
 2. 保存 session；
 3. 强制执行 Knowledge Extraction；
 4. 若本次 session 收到了用户的因果表（第一档）或填空结果（第二档），转成 mermaid 写入对应 MOC 的"我的版本"，并记录评分；

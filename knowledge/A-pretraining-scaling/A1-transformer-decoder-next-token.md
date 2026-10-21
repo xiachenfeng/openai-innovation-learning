@@ -7,7 +7,7 @@ status: canonical
 mastery: 1
 importance: 5
 created: 2026-09-13
-updated: 2026-10-15
+updated: 2026-10-21
 source_check: 2026-09-13
 sources:
   - https://arxiv.org/abs/1706.03762
@@ -619,6 +619,111 @@ flowchart TB
 
 提醒：多数 head 无干净描述（Voita 等：少数位置/句法/稀有词头，其余可剪）；head 分工由训练决定，换种子可能换 head 承担；以上均对开源权重（GPT-2）成立，OpenAI 闭源模型的 head 作用属 Unknown，不得从行为反推。可选实验：在 E3 的 GPT-2 四尺寸上加 head 探针，算上一个词分数与 induction 分数热力图，核对 Olsson 等"induction 头出现与 ICL 提升同步"的说法，见 [[A5-gpt-3-in-context-learning]]。
 
+
+### 11.14 LM head 具体是怎样一个组件（2026-10-21 追问，B1 学习中）
+
+E1 里就一行：`self.lm_head = nn.Linear(cfg.n_embd, cfg.vocab_size, bias=False)`，再加 `self.lm_head.weight = self.wte.weight` 与输入 embedding 共享。它是一个 $d \times V$ 的矩阵，没有非线性，不是 block 意义上的"层"。位置：block 堆叠之后、`ln_f` 之后，$h = \mathrm{ln\_f}(x) \in \mathbb{R}^{B\times T\times d}$，$z = hW \in \mathbb{R}^{B\times T\times V}$。
+
+| 模型 | $d$ | $V$ | LM head 参数量 |
+|---|---|---|---|
+| E1 tiny GPT | 128 | 65 | 8,320（与 wte 共享，只存一份） |
+| GPT-2 small | 768 | 50,257 | 3,860 万，占 1.24 亿的 31% |
+| GPT-3 175B | 12,288 | 50,257 | 6.2 亿，不到 0.4% |
+
+算什么：位置 $t$ 对候选 token $v$ 的 logit 是 $z_t[v] = h_t \cdot W[v]$，即隐状态与词向量的点积（§11.3）。手算例子（$d=2$，$V=3$）：$h_t=[1,2]$，$W$ 三行 $[1,0],[0,1],[-1,1]$，则 $z=[1,2,1]$，$p=\mathrm{softmax}(z)=[0.21,0.58,0.21]$，正确答案为第一个 token 时 $\mathcal L=-\log 0.21\approx1.55$。
+
+训练时怎么被改：$\partial\mathcal L/\partial z = p - \mathbf 1[\text{target}] = [-0.79,0.58,0.21]$，外积 $h_t$ 就是 $W$ 的梯度：正确词的那一行向 $h_t$ 方向推，其他行反向推；tie 时输入与输出两侧的梯度叠加在同一行上。
+
+同一个 $h_t$ 后面接什么，决定了它在四条线里的角色（这是 [[B1-ppo-human-preferences-2017]] 里提问的来由）：
+
+| 用法 | 乘什么 | 取什么 | 节点 |
+|---|---|---|---|
+| 预训练 | $d\times V$ 的 LM head | 全部 logit，与数据 token 算交叉熵 | A1 |
+| 打分式读法 | 同一个 LM head | 只比较两三个候选 token 的 logit，不改参数 | [[A3-gpt-2-zero-shot]]、[[A5-gpt-3-in-context-learning]]、E3 |
+| reward model | 换成 $d\times 1$ 的标量头 | 末位一个数，作 Bradley–Terry 的 reward | [[B1-ppo-human-preferences-2017]] §3.1；[[A2-sentiment-neuron-gpt-1]] 的 $W_y$（$d\times$ 类别数）是近亲 |
+| RLHF 策略 | 还是 LM head | 每步的 $V$ 维分布就是 $\pi(a_t\mid s_t)$，采样一个 token 当动作 | [[B1-ppo-human-preferences-2017]] §11.1 |
+
+"把 LM 当策略"不换任何组件；"把 LM 当 reward model"只把这个矩阵换成一列。
+
+#### 全模型参数分区图（2026-10-21 追问）
+
+独立图解页：[Decoder 参数分区图](https://claude.ai/artifact/GmGabuBSj1Aca5xJhwQgNy)（V-27）：按数据流画，每个组件一个节点只标"组件 + 参数量"，无参数的计算（mask、softmax、GELU、残差）也作节点；下面卡内的版本是合并后的 ≤10 层账本版。
+
+GPT-2 small（$V=50{,}257$，$d=768$，$T_{\max}=1024$，$L=12$）的账本，与 [[A4-scaling-laws]] §11.3 的 E1 版本对照。蓝色为词表与位置相关参数，橙色为每层重复的四个权重矩阵（每层 $12d^2$），灰色为 LayerNorm 与 bias 的 $O(d)$ 小量。Kaplan 的非 embedding 参数 $N$ 只数橙色加 ln_f。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  WTE["① token embedding wte<br/>V×d = 50257×768 = 38.6M（31%）"]:::data
+  WPE["② position embedding wpe<br/>T_max×d = 1024×768 = 0.79M"]:::data
+  BT["▼ block ×12，每层 12·d² + 13·d = 7.09M"]:::label
+  QKV["③ LN₁（2d）→ ④ W_Q W_K W_V<br/>d×3d，3d² = 1.77M/层"]:::model
+  WO["⑤ W_O 输出投影<br/>d×d = 0.59M/层"]:::model
+  W1["⑥ LN₂（2d）→ ⑦ W_1 升维<br/>d×4d = 2.36M/层"]:::model
+  W2["⑧ W_2 降维<br/>4d×d = 2.36M/层"]:::model
+  HEAD["⑨ ln_f（2d）→ ⑩ LM head<br/>d×V，tie 则共享 wte 不另计"]:::data
+  SUM["合计 124.4M<br/>词表侧 38.6M + 位置 0.79M<br/>+ 12 层 85.1M + ln_f"]:::frozen
+  WTE --> BT
+  WPE --> BT
+  BT --> QKV --> WO --> W1 --> W2 --> HEAD --> SUM
+  WTE -.->|"weight tying：<br/>同一个 [V, d] 矩阵"| HEAD
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+  classDef label fill:none,stroke:none,color:#333,font-weight:bold
+```
+
+| 块 | 部件 | 形状 | 计算式 | GPT-2 small | E1（$V=65$，$d=128$，$L=4$） |
+|---|---|---|---|---|---|
+| 词表侧 | ① wte | $V\times d$ | $Vd$ | 38.6M | 8,320 |
+| 位置侧 | ② wpe | $T_{\max}\times d$ | $T_{\max}d$ | 0.79M | 16,384 |
+| block ×L | ③ LN₁、⑥ LN₂、各 bias | 约 $13d$ | | 10K/层 | 1,664/层 |
+| block ×L | ④ $W_Q, W_K, W_V$ | $d\times 3d$ | $3d^2$ | 1.77M/层 | 49,152/层 |
+| block ×L | ⑤ $W_O$ | $d\times d$ | $d^2$ | 0.59M/层 | 16,384/层 |
+| block ×L | ⑦ $W_1$ | $d\times 4d$ | $4d^2$ | 2.36M/层 | 65,536/层 |
+| block ×L | ⑧ $W_2$ | $4d\times d$ | $4d^2$ | 2.36M/层 | 65,536/层 |
+| 输出侧 | ⑨ ln_f | $2d$ | | 1.5K | 256 |
+| 输出侧 | ⑩ LM head | $d\times V$ | $Vd$，tie 则 0 | 0 | 0 |
+| 合计 | | | | 124.4M | 818K（`train.py` 减 wpe 后打印 801,664） |
+
+规律：MLP 占一层的 8/12，注意力 4/12；模型变大时 $d$、$L$ 增长而 $V$ 不变，词表侧占比从 GPT-2 small 的 31% 降到 GPT-3 175B 的 0.4%。无参数的部件：causal mask、softmax、$1/\sqrt{d_k}$、GELU、残差相加、KV cache。
+
+### 11.15 "I have a" → " cat"：一次 next-token 推理的张量轨迹（2026-10-21 追问）
+
+独立图解页：[Next-token 推理一步](https://claude.ai/artifact/7c9XT52iZQhCDfJiuQsVg3)（V-28）：页面版把数据张量（圆柱）与参数（方框）分成两种实体，参数从侧边接入；卡内下图是合并后的简版。以 GPT-2 small（$d=768$，12 头 × 64，$V=50{,}257$）为例，$T=3$：
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  TXT["文本 'I have a'<br/>BPE → ids [40, 423, 257]（待核对）"]:::data
+  EMB["wte[ids] + wpe[0,1,2]<br/>→ x [3, 768]"]:::model
+  ATT["每层：LN₁ → Q K V 各 [12, 3, 64]<br/>分数 [12, 3, 3] 带 causal mask"]:::model
+  MIX["softmax 沿 key 轴 → @V → 拼回 [3, 768]<br/>→ W_O，残差；LN₂ → W_1 [3, 3072] → GELU → W_2，残差"]:::model
+  LNF["×12 层后 LayerNorm_f → h [3, 768]"]:::model
+  LAST["推理只取最后一行 h₂（' a' 位置）[768]"]:::frozen
+  HEAD["h₂ @ wteᵀ → logits [50257]<br/>softmax → ' cat'（id 3797）"]:::data
+  KV["各层 K、V 三行进 KV cache<br/>下一步只算 ' cat' 一行"]:::frozen
+  TXT --> EMB --> ATT --> MIX --> LNF --> LAST --> HEAD
+  ATT -.-> KV
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+要点：（1）三个位置都算出 logits，位置 0 在预测 " have"、位置 1 在预测 " a"，训练时三行都与下一个 token 算交叉熵（teacher forcing），推理只读最后一行；（2）注意力分数矩阵每头一张 $3\times 3$，上三角为 $-\infty$，第 3 行（' a'）看到全部三个 token；（3）最后一步是 $h_2$ 与 50,257 个词向量各做一次点积（§11.14）；（4）生成 ' cat' 后下一步只对它算新的一行 Q、K、V，K、V 与 cache 里的 3 行拼成 4 行（§11.11、§11.12）。token id 凭记忆写出，待 tiktoken 核对；具体概率未运行。
+
+**$\gamma_f, \beta_f$ 是什么（2026-10-21 追问）。** 末层归一化 `ln_f`（final LayerNorm）的两个可学习向量，各 $d=768$ 维。LayerNorm 对每个位置的 768 维向量先按该向量自身的均值、方差标准化，再逐维乘 $\gamma$ 加 $\beta$：$y = \gamma \odot \frac{x-\mu}{\sqrt{\sigma^2+\epsilon}} + \beta$。$\gamma$ 是每一维的缩放、$\beta$ 是每一维的偏移，让网络能把标准化后的尺度调回需要的范围。每个 block 里有两个 LayerNorm（$\gamma_1,\beta_1$ 在注意力前，$\gamma_2,\beta_2$ 在 MLP 前），`ln_f` 是 12 层之后、LM head 之前的最后一个，GPT-2 的 pre-LN 结构里它保证送进 LM head 的 $h$ 尺度稳定。参数量 $2d=1{,}536$，相对 12·d² 可忽略，但不能省：去掉它 logits 的尺度会随层数漂移。页面 V-28 第 3 版给每个参数节点加了中文名（词嵌入表、位置嵌入表、层归一化、注意力投影、注意力输出投影、MLP 升维 / 降维、末层归一化）。
+
+**ln_f 只需对最后一行做吗（2026-10-21 追问）。** 推理时是。LayerNorm 逐位置独立，行间不交换信息，ln_f 之后没有注意力，所以只对最后一行做 ln_f 与 LM head，结果与先对全部 T 行做再取最后一行相同，高效实现就这么写。训练时每个位置都有交叉熵，ln_f 对全部 T 行做。block 内的 LN₁、LN₂ 不能只做最后一行，因为后面的注意力要读所有位置的 K、V；prefill 阶段全部位置算一遍并存 K、V，之后每个新 token 只算自己那一行（§11.11）。页面 V-28 第 5 版已改成"取最后一行 → ln_f → LM head"的顺序。
+
+**LM head 的参数是不是就是归一化参数（2026-10-21 追问）。** 不是。`ln_f` 的 $\gamma_f,\beta_f$ 是两个 768 维向量（1,536 个数），只把 $h$ 每一行标准化后逐维缩放、偏移，输入输出都是 768 维，不碰词表；LM head 是 $768\times 50{,}257$ 的矩阵（3,860 万个数），把 $h_2$ 与每个词向量做点积得到 logits，768 维变 50,257 维。GPT-2 把它与 wte 共享，所以不另存一份，但它就是那张嵌入表；不共享时要单独多存 3,860 万参数。两者在图上相邻、都在输出侧，归一化只决定送进 LM head 的向量尺度。V-28 页面已把 LM head 补成明确的参数方框并附对照表（§11.3、§11.14）。
+
+**生成 ' cat' 之后再推下一个：是不是逐层建 12 层的 QKV，最后 LM head 一次大矩阵乘，取最大（2026-10-21 追问）。** 基本对，三处修正：（1）只为新 token 算一行 q、k、v（各 12 × 64），k、v 追加进该层 KV cache（3 行 → 4 行），q 用完即弃，前面 token 的 K、V 不重算；没有 cache 时每步要把全部位置重算，总开销随长度平方增长（§11.11、§11.12）。（2）层间严格串行：第 $l$ 层的 q、k、v 来自第 $l-1$ 层输出，第 $l$ 层输出要等本层注意力读完 cache 里的 4 行再过 MLP；只有同一层的 12 个头并行。（3）12 层后取这一行过 `ln_f`，乘 $768\times 50{,}257$ 的共享矩阵得 50,257 个 logit，这是每步最大的一次矩阵乘；"取最大"只是贪心解码，实际系统多按 softmax 概率采样并用 temperature、top-p 截断，GPT-3 论文生成式任务用 beam search。第二步每层尺寸：分数 $12\times 1\times 4$（一行 query 看 4 个 key），其余与第一步同形但只有一行。第一步（prefill）3 行并行并顺便存 cache，之后每步（decode）只算一行。
+
 ## 最小示例或实验
 
 对应实验：[[E1-tiny-gpt]]（`experiments/pretraining/tiny_gpt/`）。model.py 的注释按 §2.2 的 13 步标注 shape；两处填空是 causal mask（§2.3）与交叉熵（§3）。
@@ -672,6 +777,8 @@ flowchart TB
 - [一个 token 碰到多少参数](https://claude.ai/artifact/RvHqmEJq4pzTaAbv55BnJ2)（ELI5 图解，2026-09-28）：GPT-2 small 按 wte / wpe / 12 层记账。对应 §11.7。
 - [Softmax 数几次](https://claude.ai/artifact/99E9zJgrQDsNnMLvgKyoDN)（ELI5 图解（交互），2026-09-28）：H × T 次；T、H、D 滑块记账。对应 §11.8。
 - [注意力头是什么](https://claude.ai/artifact/Hf8HWThP6TwHa6dDF9g5nu)（ELI5 图解，2026-10-11）：head 与 Q/K/V 的关系。对应 §11.10。
+- [Decoder 参数分区图](https://claude.ai/artifact/GmGabuBSj1Aca5xJhwQgNy)（追问图板，2026-10-21）：GPT-2 small 数据流，每个组件只标名字与参数量，合计 124.4M。对应 §11.14。
+- [Next-token 推理一步](https://claude.ai/artifact/7c9XT52iZQhCDfJiuQsVg3)（追问图板，2026-10-21）："I have a" → " cat" 的张量形状轨迹、因果 mask、KV cache。对应 §11.15。
 
 ## 掌握证据
 

@@ -41,7 +41,7 @@ flowchart TB
   GAP{{"留下的瓶颈：目标是模仿语料<br/>不是用户意图；会编造、有害<br/>行为全靠 prompt 技巧"}}:::loss
   Q["Track B 主线问题：<br/>只会续写的模型如何按意图行事"]:::data
   B1["B1（2017）：reward 从人的比较里学<br/>PPO 优化策略，在游戏与机器人上"]:::model
-  LM["把 LM 当策略：状态 = 前文<br/>动作 = 下一个 token，回答 = 轨迹"]:::frozen
+  LM["把 LM 当策略：状态 = 前文；<br/>动作 = 下一个 token；回答 = 轨迹"]:::frozen
   B2["B2–B3：RM + PPO + KL 用到 LM<br/>策略与 RM 都从预训练模型初始化"]:::model
   A2["A2 的配方：预训练 + 加头微调<br/>小学习率保护预训练参数"]:::frozen
   A5 --> GAP --> Q

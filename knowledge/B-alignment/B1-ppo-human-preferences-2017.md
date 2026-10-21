@@ -7,7 +7,7 @@ status: canonical
 mastery: 0
 importance: 5
 created: 2026-10-15
-updated: 2026-10-17
+updated: 2026-10-21
 source_check: 2026-10-15
 sources:
   - https://arxiv.org/abs/1706.03741
@@ -104,6 +104,24 @@ flowchart TB
   classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
   classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
 ```
+
+### 2.3 读论文重点：Schulman 怎样从理论下界推出工程近似
+
+> [!tip] 读 PPO 时盯住这条三步链
+> PPO 本身没有新定理，它的价值在于把 TRPO 的理论保证一步步换成一阶 SGD 能做的近似，每一步都放松了保证、换来了可实现性。读 PPO §2～§4 时对照下表，看每一步丢掉了什么。
+
+| 步 | 形式 | 保证 | 代价 / 放松了什么 | 出处 |
+|---|---|---|---|---|
+| 0 理论下界 | $\eta(\tilde\pi) \ge L_\pi(\tilde\pi) - C\, D_{\mathrm{KL}}^{\max}(\pi,\tilde\pi)$，$C = \frac{4\epsilon\gamma}{(1-\gamma)^2}$ | 最大化右边即单调改进（minorize–maximize） | $C$ 极大，步长小到不可用；$D^{\max}$ 要对所有状态取最大 | TRPO 定理 1（非 OpenAI，P-27，凭记忆待核对） |
+| 1 TRPO | 最大化 $L_\pi$，约束 $\overline{D}_{\mathrm{KL}} \le \delta$ | 近似保证 | 惩罚换成约束、max 换成平均；要共轭梯度 + 线搜索 | TRPO §4～§6 |
+| 2 PPO-KL | $\hat{\mathbb{E}}_t[r_t\hat A_t - \beta\,\mathrm{KL}]$，$\beta$ 自适应 | 无硬保证 | 回到理论里的"惩罚"形式，用自适应 $\beta$ 代替算不出来的 $C$ | PPO §4（P-26） |
+| 3 PPO-clip | 式 (7) $L^{\mathrm{CLIP}}$ | 只剩"悲观下界"的直觉 | 不再算 KL，改成逐样本截断 $r_t$；多 epoch 后实际 KL 不受控（§8） | PPO §3（P-26） |
+
+阅读时注意三点：
+
+1. **"下界"这个思想一直保留。** 第 0 步是严格下界，第 3 步的 $\min(\cdot,\mathrm{clip}(\cdot))$ 仍是对 $L^{\mathrm{CPI}}$ 的悲观下界，只是不再对应真实回报 $\eta$ 的证明。这就是 §2.2 表格里"只在改进方向截断"的来源。
+2. **PPO §2.2 自己承认理论更支持惩罚而不是约束**，难点只是 $\beta$ 选不好；第 2 步的自适应 $\beta$ 就是对这句话的回答（凭记忆，待核对原文措辞）。
+3. **判断"近似是否够好"靠实验而不是证明**：PPO 表 1 拿"无截断无惩罚 / 固定 β / 自适应 β / 不同 ε"做消融，ε=0.2 最好（§7）。这是 Schulman 的典型写法：理论定方向，实验定取舍。后来 RLHF 里对参考模型的 KL 惩罚又回到了第 2 步的形式，见 §10.3。
 
 ### 主线因果位置
 
@@ -742,6 +760,10 @@ $$
 
 **与 $\lambda$ 的分工。** $\gamma$ 定义目标 $G_t = \sum_k \gamma^k r_{t+k}$ 里未来算多少；$\lambda$ 定义怎么估这个目标：$\lambda = 1$ 全信实际回报（无偏、高方差），$\lambda = 0$ 全信 $V(s_{t+1})$ 的 bootstrap（有偏、低方差），见 §11.3。InstructGPT 的组合 $\gamma = 1$、$\lambda = 0.95$：目标上不打折，估计上稍借价值模型降噪。一句话：$\gamma$ 决定远处的分算不算数，$\lambda$ 决定远处的分信谁报的。
 
+
+### 11.13 LM head 具体是什么组件（2026-10-21 追问）
+
+答案写在 [[A1-transformer-decoder-next-token]] §11.14：一个 $d\times V$ 的线性矩阵，logit 是隐状态与词向量的点积；本卡用到它的两处是把它的输出分布当策略 $\pi(a_t\mid s_t)$（§11.1），以及把它换成 $d\times 1$ 标量头当 reward model（§3.1）。
 
 ## 最小示例或实验
 

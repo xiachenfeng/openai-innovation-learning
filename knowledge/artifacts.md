@@ -1,7 +1,7 @@
 ---
 title: 图板与图解页台账
 level: 0
-updated: 2026-10-17
+updated: 2026-10-21
 tags: [openai, hub, artifacts]
 ---
 
@@ -38,11 +38,13 @@ tags: [openai, hub, artifacts]
 | V-19 | [GPT 一二三代](https://claude.ai/artifact/BbXMezmJyrEVJuUiyuXUmG) | ELI5 图解 | A5 | [[A5-gpt-3-in-context-learning]] §11.9 | 2026-10-11 | 脑子大小、数据量、三种用法、参数表 |
 | V-20 | [Induction Heads 图画书](https://claude.ai/artifact/Upa1wVEfQ4LBn2ahwG3aNh) | ELI5 图解 | A5 | [[A5-gpt-3-in-context-learning]] §11.5 | 2026-10-11 | 两个 head 配合完成「抄前文」的电路 |
 | V-21 | [MAML 小画书](https://claude.ai/artifact/XNdkqWJ1ezvEF5oFaBiH66) | ELI5 图解 | A5 | [[A5-gpt-3-in-context-learning]] §11.15 | 2026-10-13 | 显式梯度式 meta-learning 与 ICL 对照（非 OpenAI） |
-| V-22 | [PPO 与 Human Preferences 图板](https://claude.ai/artifact/U8pfXG1BpHr83eC6BJyTbg) | 本节图板 | B1 | [[B1-ppo-human-preferences-2017]] 全卡（9 张，3 张入卡；衔接图入 MOC） | 2026-10-15 | 三进程闭环、PPO 训练循环、clip 四种情况、两个 KL、时序图 |
+| V-22 | [PPO 与 Human Preferences 图板](https://claude.ai/artifact/U8pfXG1BpHr83eC6BJyTbg) | 本节图板 | B1 | [[B1-ppo-human-preferences-2017]] 全卡（9 张，3 张入卡；衔接图入 MOC；参数分区图另见 V-27） | 2026-10-15 | 三进程闭环、PPO 训练循环、clip 四种情况、两个 KL、时序图 |
 | V-23 | [PPO in Pictures](https://claude.ai/artifact/W62d69PXW35bCnih2LQWAN) | ELI5 图解（英文） | B1 | [[B1-ppo-human-preferences-2017]] §2.2 | 2026-10-15 | 小狗学把戏六张图：treat、advantage、cliff、fence、loop、RLHF |
 | V-24 | [图解 PPO](https://claude.ai/artifact/WvB6r5iggPxUCXeBm4RqbS) | ELI5 图解（中文） | B1 | [[B1-ppo-human-preferences-2017]] §2.2 | 2026-10-15 | 上一页的中文版，术语括注英文 |
 | V-25 | [PPO 基线图板](https://claude.ai/artifact/WLVGDQAYB6fWJuiCTsaHNx) | 追问图板 | B1 | [[B1-ppo-human-preferences-2017]] §11.3～§11.8 | 2026-10-15～16 | 基线 V(s) 与 GAE 的数据流，λ 两端对照表；PPO 论文与 RLHF 两种网络结构（value head）与 head 形状表；InstructGPT 三步流程与一轮 PPO 循环；逐 token 量合成总 loss 的图与 T=4 数值例子；rollout / update 交替与概率比 ρ_t 的重要性采样本质 |
 | V-26 | [PPO × Next-token 训练图板](https://claude.ai/artifact/KcFkoErwZppVLoMdy22Ho3) | 追问图板（交互） | B1 | [[B1-ppo-human-preferences-2017]] §11.9～§11.12 | 2026-10-16～17 | InstructGPT 第 3 步的实体与数据流（少公式版）：三步定位、4 模型 + 3 种数据 + 旧策略快照的实体卡、同一词表头的 SFT / PPO 两种来源、rollout → 账本 → update 的数据流转大图、「一个 token 的一生」时序图、账本每列的生产者与消费者血缘图、新旧概率对比为何必要、四模型泳道、六节点压缩图、公开边界四格；06b 价值模型两条路、各位置目标与估值、带 γ 与整条分双滑块的四行账交互图（对数比 → 偏离罚 → r_t → G_t 递推表，数值自洽）、γ 的物理意义与 γ/λ 分工、整条分的归一化与分差单位、每步奖励 r_t 的来路与正负号来源、末尾信号向前衰减 |
+| V-27 | [Decoder 参数分区图](https://claude.ai/artifact/GmGabuBSj1Aca5xJhwQgNy) | 追问图板 | A1 | [[A1-transformer-decoder-next-token]] §11.14 | 2026-10-21 | GPT-2 small 的 decoder 数据流图：每个组件一个节点，只标组件名 + 参数量（含无参数的 mask / softmax / GELU / 残差），合计 124.4M |
+| V-28 | [Next-token 推理一步](https://claude.ai/artifact/7c9XT52iZQhCDfJiuQsVg3) | 追问图板 | A1 | [[A1-transformer-decoder-next-token]] §11.15 | 2026-10-21 | "I have a" 三个 token 经 GPT-2 small 各层到 " cat" 的张量轨迹（第 10 版 = 回滚到第 5 版：参数方框在张量旁边、标签用 `<br/>`，线上会把换行吃掉但用户接受；单列最简版已于 2026-10-21 删除），圆柱 = 数据张量、方框 = 参数、边标 = 无参数计算；3×3 因果 mask；三个位置各预测什么；最后一步 h₂ @ wteᵀ 与 KV cache；LM head 与 ln_f 的区别表 |
 
 ## 登记规则
 
