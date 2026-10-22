@@ -96,7 +96,7 @@ B5 建立在 [[C-reasoning]] 之上，学完 Track C 再回来。
 
 | 节点 | 页面 |
 |---|---|
-| B1 | [PPO 与 Human Preferences 图板](https://claude.ai/artifact/U8pfXG1BpHr83eC6BJyTbg)（本节图板）；[PPO in Pictures](https://claude.ai/artifact/W62d69PXW35bCnih2LQWAN)（ELI5 图解）；[图解 PPO](https://claude.ai/artifact/WvB6r5iggPxUCXeBm4RqbS)（ELI5 图解）；[PPO 基线图板](https://claude.ai/artifact/WLVGDQAYB6fWJuiCTsaHNx)（追问图板）；[PPO × Next-token 训练图板](https://claude.ai/artifact/KcFkoErwZppVLoMdy22Ho3)（追问图板） |
+| B1 | [PPO 与 Human Preferences 图板](https://claude.ai/artifact/U8pfXG1BpHr83eC6BJyTbg)（本节图板）；[PPO in Pictures](https://claude.ai/artifact/W62d69PXW35bCnih2LQWAN)（ELI5 图解）；[图解 PPO](https://claude.ai/artifact/WvB6r5iggPxUCXeBm4RqbS)（ELI5 图解）；[PPO 基线图板](https://claude.ai/artifact/WLVGDQAYB6fWJuiCTsaHNx)（追问图板）；[PPO × Next-token 训练图板](https://claude.ai/artifact/KcFkoErwZppVLoMdy22Ho3)（追问图板）；[GAE 前置地图](https://claude.ai/artifact/FCmUPh7gBr9XTDHH6c7W2U)（追问图板） |
 | B2 | 无 |
 | B3 | 无 |
 | B4 | 无 |

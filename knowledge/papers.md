@@ -45,6 +45,9 @@ tags: [openai, hub, papers]
 | P-28 | Fine-Tuning Language Models from Human Preferences（Ziegler 等） | 2019 | OpenAI（B-19） | B1 提及，B2 待学 | 摘要 | 仅提及 |
 | P-29 | Sequence Level Training with Recurrent Neural Networks（MIXER，Ranzato 等） | 2015 | 非 OpenAI，前史（R-10） | B1 §11.1 | 无（凭记忆） | 仅提及 |
 | P-30 | High-Dimensional Continuous Control Using Generalized Advantage Estimation（GAE，Schulman 等） | 2016 | 非 OpenAI，前置（R-11） | B1 §11.3 | §3 式 (11)～(16) 的 δ_t 与 Â_t（凭记忆） | 仅引用 |
+| P-31 | Learning to Predict by the Methods of Temporal Differences（Sutton） | 1988 | 非 OpenAI，前置（R-12） | B1 §11.15 | 无（凭记忆） | 仅提及 |
+| P-32 | Simple Statistical Gradient-Following Algorithms（REINFORCE，Williams） | 1992 | 非 OpenAI，前置（R-13） | B1 §11.15 | 无（凭记忆） | 仅提及 |
+| P-33 | Policy Gradient Methods for RL with Function Approximation（Sutton 等） | 2000 | 非 OpenAI，前置（R-14） | B1 §11.15 | 无（凭记忆） | 仅提及 |
 
 ## 逐篇
 
@@ -390,6 +393,38 @@ tags: [openai, hub, papers]
 | 知识点 | 引用了什么 |
 |---|---|
 | [[B1-ppo-human-preferences-2017]] §11.3 | 优势 = 实际回报 − 基线 V(s)；减去不依赖动作的基线不改变梯度期望；λ 的偏差—方差权衡 |
+| [[B1-ppo-human-preferences-2017]] §11.14 | 题名、作者、arXiv 1506.02438、ICLR 2016；λ=0 为一步 TD、λ=1 为蒙特卡洛；实验为 TRPO + GAE 的 MuJoCo 运动控制（凭记忆） |
+| [[B1-ppo-human-preferences-2017]] §11.15 | §2 Ψ_t 的六种取法；§3 k 步优势 Â^(k) 与其指数加权化简为 Σ(γλ)^l δ_{t+l}；V=V^π 时 E[δ_t] = A；用信赖域拟合 V_φ（凭记忆） |
+
+### P-31 Learning to Predict by the Methods of Temporal Differences（Sutton，1988）
+
+- 来源级别：非 OpenAI，前置（R-12）。
+- 课程节点：B1 §11.15（2026-10-22）。
+- 已读章节：无，凭记忆引用。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.15 | TD(0) 的一步残差与 TD(λ) 的指数加权，作为 GAE 中 λ 的来源 |
+
+### P-32 Simple Statistical Gradient-Following Algorithms for Connectionist RL（Williams，1992）
+
+- 来源级别：非 OpenAI，前置（R-13）。
+- 课程节点：B1 §11.15（2026-10-22）。
+- 已读章节：无，凭记忆引用。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.15 | REINFORCE 用回报乘 ∇log π 估梯度；减去基线不改变期望 |
+
+### P-33 Policy Gradient Methods for RL with Function Approximation（Sutton、McAllester、Singh、Mansour，2000）
+
+- 来源级别：非 OpenAI，前置（R-14）。
+- 课程节点：B1 §11.15（2026-10-22）。
+- 已读章节：无，凭记忆引用。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.15 | 策略梯度定理：∇J = E[∇log π(a\|s) · Q(s,a)]，可用函数逼近的 critic |
 
 ### P-19 Direct Preference Optimization（Rafailov 等，2023）
 

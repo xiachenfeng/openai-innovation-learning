@@ -7,7 +7,7 @@ status: canonical
 mastery: 0
 importance: 5
 created: 2026-10-15
-updated: 2026-10-21
+updated: 2026-10-22
 source_check: 2026-10-15
 sources:
   - https://arxiv.org/abs/1706.03741
@@ -765,6 +765,238 @@ $$
 
 答案写在 [[A1-transformer-decoder-next-token]] §11.14：一个 $d\times V$ 的线性矩阵，logit 是隐状态与词向量的点积；本卡用到它的两处是把它的输出分布当策略 $\pi(a_t\mid s_t)$（§11.1），以及把它换成 $d\times 1$ 标量头当 reward model（§3.1）。
 
+### 11.14 GAE 是哪篇论文（2026-10-22 追问）
+
+**High-Dimensional Continuous Control Using Generalized Advantage Estimation**，Schulman、Moritz、Levine、Jordan、Abbeel，UC Berkeley，arXiv 1506.02438（2015-06），ICLR 2016 发表。**非 OpenAI**（R-11、P-30），作者团队与 TRPO 相同，比 OpenAI 成立早半年。
+
+- **解决什么**：策略梯度要用优势 $\hat A_t$ 给动作打分。用整条轨迹的蒙特卡洛回报无偏但方差大；只用一步 TD 残差 $\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$ 方差小但偏差随 $V$ 的误差走。GAE 用 $\hat A_t = \sum_l (\gamma\lambda)^l \delta_{t+l}$ 在两者之间连续插值：$\lambda=0$ 退化为一步 TD，$\lambda=1$ 退化为蒙特卡洛（§11.3、§11.10）。
+- **与 TRPO 的分工**：同一批作者，TRPO 管"一步走多远"（§2.3 的第 0～1 步），GAE 管"往哪走的信号多准"；论文实验就是 TRPO + GAE 跑 MuJoCo 运动控制。
+- **进入 OpenAI 的路径**：PPO 论文 §5 直接采用截断 GAE（式 (11)(12)），默认 $\gamma=0.99$、$\lambda=0.95$（§3.2）；之后 InstructGPT 等 RLHF 实现沿用 PPO，也就沿用了 GAE。
+- **按课程规则**：只能用来解释通用机制；OpenAI 后续系统里 GAE 的具体设定未公开。
+
+### 11.15 理解 GAE 要先懂哪些算法，它们什么关系（2026-10-22 追问）
+
+GAE 是两条线的汇合点：**价值估计线**（蒙特卡洛 → TD → n-step → TD(λ)）回答"回报怎么估、偏差和方差怎么取舍"，**策略梯度线**（REINFORCE → 基线 → 优势 → actor-critic）回答"用什么信号给动作打分"。GAE 把前一条线的 λ 加权，搬到后一条线的优势估计上。以下前置全部是**非 OpenAI** 的通用强化学习知识（教材 Sutton & Barto《Reinforcement Learning: An Introduction》第 5～7、12、13 章覆盖其中大部分，章号凭记忆）。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  M["⓪ 期望、方差、无偏估计<br/>几何级数"]:::data
+  MDP["① MDP：回报 G_t、折扣 γ"]:::data
+  V["② 价值函数 V、Q<br/>Bellman 方程"]:::model
+  PG["⑦ 策略梯度定理<br/>REINFORCE"]:::model
+  MC["③ 蒙特卡洛回报<br/>无偏、方差大"]:::data
+  TD["④ TD(0)：残差 δ_t<br/>方差小、随 V 有偏"]:::data
+  BL["⑧ 基线 b(s)<br/>减方差、不改期望"]:::model
+  NS["⑤ n-step 回报<br/>前 n 步真奖励 + V 收尾"]:::data
+  ADV["⑨ 优势 A = Q − V"]:::model
+  LAM["⑥ TD(λ)：λ-return<br/>对所有 n-step 指数加权"]:::data
+  AC["⑩ Actor-critic<br/>学一个 V_φ 当基线"]:::model
+  GAE["GAE：Â_t = Σ (γλ)^l δ_{t+l}"]:::loss
+  PPO["TRPO + GAE（2015）<br/>PPO 截断 GAE（2017）→ RLHF"]:::frozen
+  M --> MDP
+  MDP -->|"定义要估的量"| V
+  MDP -->|"对期望回报求梯度"| PG
+  V -->|"直接采样"| MC
+  V -->|"自举一步"| TD
+  PG -->|"梯度方差太大"| BL
+  MC -->|"一端"| NS
+  TD -->|"另一端"| NS
+  BL -->|"基线取 V(s)"| ADV
+  V --> ADV
+  NS -->|"不想手选 n"| LAM
+  ADV -->|"用网络估 V"| AC
+  LAM -->|"λ 加权搬到<br/>优势估计上"| GAE
+  AC -->|"V=V^π 时<br/>E[δ_t] = A"| GAE
+  GAE --> PPO
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+| 编号 | 前置 | 一句话 | 和 GAE 的关系 | 出处 |
+|---|---|---|---|---|
+| ⓪ | 期望、方差、无偏估计、几何级数 | 估计量好坏的两把尺子 | GAE 的全部论证就是偏差—方差权衡；$\sum(\gamma\lambda)^l$ 是几何级数 | 数学基础 |
+| ① | MDP、回报 $G_t=\sum_k \gamma^k r_{t+k}$ | 定义"要最大化什么" | $\gamma$ 来自这里；GAE 论文把 $\gamma$ 也解释为降方差的偏差来源 | 教材第 3 章 |
+| ② | $V^\pi(s)$、$Q^\pi(s,a)$、Bellman 方程 | 从某状态 / 某动作出发的期望回报 | $\delta_t$ 就是 Bellman 方程的残差 | 教材第 3～4 章 |
+| ③ | 蒙特卡洛回报 | 用整条轨迹的实际回报估价值 | $\lambda=1$ 的一端：无偏、方差大 | 教材第 5 章 |
+| ④ | TD(0) 与 $\delta_t = r_t+\gamma V(s_{t+1})-V(s_t)$ | 只看一步真奖励，剩下交给 $V$ | $\lambda=0$ 的一端：方差小、$V$ 不准就有偏；GAE 的基本砖块 | Sutton 1988（P-31） |
+| ⑤ | n-step 回报 | 前 n 步用真奖励，第 n 步用 $V$ 收尾 | GAE 论文里的 $k$ 步优势 $\hat A^{(k)}_t=\sum_{l<k}\gamma^l\delta_{t+l}$ 就是 n-step 优势 | 教材第 7 章 |
+| ⑥ | TD(λ) / λ-return | 对所有 n-step 回报按 $(1-\lambda)\lambda^{n-1}$ 加权平均 | GAE = 对所有 $\hat A^{(k)}_t$ 做同样的指数加权，化简后得到 $\sum(\gamma\lambda)^l\delta_{t+l}$ | Sutton 1988（P-31） |
+| ⑦ | 策略梯度定理、REINFORCE | $\nabla J = \mathbb{E}[\nabla\log\pi(a\mid s)\cdot \Psi_t]$，$\Psi_t$ 可取回报 | GAE 要替换的就是 $\Psi_t$；GAE 论文 §2 列出了 $\Psi_t$ 的六种取法 | Williams 1992（P-32）；Sutton 等 2000（P-33） |
+| ⑧ | 基线 $b(s)$ | 从 $\Psi_t$ 里减去只依赖状态的量，期望不变、方差变小 | 本卡 §11.3 已讲；常用基线取 $V(s)$ | Williams 1992（P-32） |
+| ⑨ | 优势 $A=Q-V$ | 这个动作比该状态下的平均好多少 | GAE 估的就是它；关键恒等式：$V=V^\pi$ 时 $\mathbb{E}[\delta_t\mid s_t,a_t]=A^\pi(s_t,a_t)$ | GAE 论文 §2～§3（P-30） |
+| ⑩ | Actor-critic | 策略网络（actor）+ 价值网络 $V_\phi$（critic） | GAE 需要一个学出来的 $V_\phi$；GAE 论文还用信赖域方法拟合 $V_\phi$ | 教材第 13 章 |
+
+#### 逐个图解（2026-10-22 追问：多用图、少文字）
+
+图板 V-29 里每个前置一张图，下面是同一份 mermaid 源码；柱状图在卡里改成数值表。
+
+**⓪ 偏差与方差**：瞄偏了是偏差，手抖是方差。几何级数 $\sum_l x^l = 1/(1-x)$；$\gamma\lambda=0.94$ 时总权重约 17，半衰期约 11 步。
+
+| $l$ | 0 | 2 | 5 | 10 | 20 |
+|---|---|---|---|---|---|
+| $0.94^l$ | 1 | 0.88 | 0.74 | 0.54 | 0.29 |
+| $0.5^l$ | 1 | 0.25 | 0.03 | 0.001 | 0 |
+
+**① MDP 与折扣回报**：$G_t=\sum_k\gamma^k r_{t+k}$，有效视野约 $1/(1-\gamma)$（$\gamma=0.99$ 约 100 步，$0.9$ 约 10 步）。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  S0(["s_t"]):::data -->|"动作 a_t"| R0["奖励 r_t"]:::human
+  R0 --> S1(["s_t+1"]):::data
+  S1 -->|"a_t+1"| R1["r_t+1，乘 γ"]:::human
+  R1 --> S2(["s_t+2"]):::data
+  S2 -->|"a_t+2"| R2["r_t+2，乘 γ²"]:::human
+  R2 --> E["… 累加 = G_t"]:::loss
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+**② 价值函数与 Bellman 方程**：$V(s)=\mathbb{E}[r+\gamma V(s')]$，两边的差就是 ④ 的 $\delta$。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  V["V(s)"]:::model
+  Q1["Q(s, a1)"]:::model
+  Q2["Q(s, a2)"]:::model
+  N1["r + γ·V(s′)"]:::data
+  N2["r + γ·V(s′)"]:::data
+  V -->|"按 π 取平均"| Q1
+  V -->|"按 π 取平均"| Q2
+  Q1 -->|"走一步"| N1
+  Q2 -->|"走一步"| N2
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+**③ 蒙特卡洛 vs ④ TD(0)**：等到结束全加起来，或只走一步剩下交给 $V$ 猜。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  A(["s_t"]):::data --> B["r_t"]:::human --> C["r_t+1"]:::human --> D["… 直到终点"]:::human
+  D --> G["G_t = 全部相加<br/>无偏、方差大"]:::loss
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  A(["s_t，预期 V(s_t)"]):::data --> B["真实奖励 r_t"]:::human --> C(["s_t+1"]):::data
+  C --> D["用 V(s_t+1) 估剩下的"]:::model
+  D --> E["δ_t = r_t + γV(s_t+1) − V(s_t)<br/>方差小、随 V 有偏"]:::loss
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+| | ③ 蒙特卡洛 | ④ TD(0) |
+|---|---|---|
+| 目标 | 整条轨迹的真实回报 | $r_t+\gamma V(s_{t+1})$ |
+| 例子（$\gamma=1$，奖励 1, 0, 0, 5，$V(s_1)=3.5$） | $G_0=6$ | $1+3.5=4.5$ |
+| 偏差 / 方差 | 无偏 / 大 | $V$ 不准就有偏 / 小 |
+| 在 GAE 里 | $\lambda=1$ | $\lambda=0$ |
+
+**⑤ n-step 回报**：前 n 步真奖励（方差），第 n 步用 $V$ 收尾（偏差）。
+
+| n | 组成 |
+|---|---|
+| 1 | $r_t$ ＋ $V$ |
+| 2 | $r_t$ $r_{t+1}$ ＋ $V$ |
+| 3 | $r_t$ $r_{t+1}$ $r_{t+2}$ ＋ $V$ |
+| ∞ | 全部真实奖励直到终点（= MC） |
+
+**⑥ TD(λ)**：所有 n 一起要，权重 $(1-\lambda)\lambda^{n-1}$。
+
+| n | 1 | 2 | 3 | 4 | 8 |
+|---|---|---|---|---|---|
+| $\lambda=0.5$ | 0.50 | 0.25 | 0.13 | 0.06 | 0.004 |
+| $\lambda=0.9$ | 0.10 | 0.09 | 0.08 | 0.07 | 0.05 |
+
+**⑦ 策略梯度**：打分高的动作提高概率；⑧～⑩ 和 GAE 都在换更好的打分 $\Psi_t$。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  P["策略 π_θ 采样轨迹"]:::model --> T[("每步记 s_t, a_t")]:::data
+  T --> D["∇log π(a_t|s_t)<br/>让 a_t 更可能的方向"]:::model
+  T --> S["打分 Ψ_t"]:::loss
+  D --> U["方向 × 打分，求平均"]:::model
+  S --> U
+  U --> TH["更新 θ"]:::model
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+**⑧ 基线**：回报 10, 11, 9, 12 全为正，全部被推高；减去基线 10.5 后为 −0.5, +0.5, −1.5, +1.5，有升有降。
+
+**⑨ 优势**：三个动作 $Q=7,5,3$，均匀策略下 $V=5$，$A=+2,0,-2$。$V=V^\pi$ 时 $\mathbb{E}[\delta_t]=A$。
+
+**⑩ Actor-critic**：critic 学 $V_\phi$，给 actor 算 $\hat A_t$。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  ENV["环境"]:::human --> TR[("轨迹 s, a, r")]:::data
+  TR --> CR["critic V_φ"]:::frozen
+  CR --> DL["算 δ_t，再算 Â_t"]:::loss
+  DL --> AC["actor π_θ<br/>按 Â_t 更新"]:::model
+  TR --> FIT["回归回报目标"]:::loss
+  FIT --> CR
+  AC --> ENV
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+**GAE 汇合**：相加时中间的 $V$ 两两抵消（telescoping）。
+
+$$
+\hat A^{(2)}_t=\delta_t+\gamma\delta_{t+1} = -V(s_t)+r_t+\gamma r_{t+1}+\gamma^2V(s_{t+2}),\qquad
+\hat A^{(k)}_t=\sum_{l<k}\gamma^l\delta_{t+l}
+$$
+
+对所有 $k$ 按 $(1-\lambda)\lambda^{k-1}$ 加权，得 $\hat A_t^{\mathrm{GAE}}=\sum_l(\gamma\lambda)^l\delta_{t+l}$。图板里有 λ 滑块，可以看权重随 λ 怎么变。
+
+**学习顺序建议**：按编号 ⓪→⑩，其中 ③④⑤⑥ 是一条线、⑦⑧⑨⑩ 是另一条线，两条可以交替读；读完后回到 GAE 论文 §3，自己从 $\hat A^{(k)}_t$ 推出 $\sum(\gamma\lambda)^l\delta_{t+l}$，推得出来就算掌握。
+
+**和课程的连接**：GAE 本身不是 OpenAI 的工作；它进入 OpenAI 的路径是 PPO 论文 §5 的截断 GAE（$\gamma=0.99$、$\lambda=0.95$，§3.2），再随 PPO 进入 [[B2-rlhf-learning-to-summarize]] 与 [[B3-instructgpt-chatgpt]]。A2C/A3C（Mnih 等，2016）与 GAE 同期，用的是固定 n-step 优势，不是前置。
+
+### 11.16 $\gamma\lambda$ 是什么意思（2026-10-22 追问）
+
+就是两个数相乘，$0.99\times0.95=0.9405$，作为 GAE 里**每往后一步的衰减系数**：$\delta_{t+l}$ 的权重是 $(\gamma\lambda)^l=\gamma^l\cdot\lambda^l$。两个因子来源不同、管的事不同（三层定位见 §11.12）：
+
+| 因子 | 属于 | 为什么乘在 $\delta_{t+l}$ 上 | 调大的后果 |
+|---|---|---|---|
+| $\gamma^l$ | 问题本身：目标 $G_t=\sum\gamma^k r_{t+k}$ | $\delta_{t+l}$ 发生在 $l$ 步之后，按目标本来就要打 $\gamma^l$ 折 | 更看重远期；若真实目标不打折，$\gamma<1$ 本身就是一种偏差 |
+| $\lambda^l$ | 估计方法：TD(λ) 加权（§11.15 ⑥） | 越远的 $\delta$ 越多地依赖真实奖励而不是 $V$，$\lambda$ 决定信多少 | 更信真实奖励：偏差小、方差大；$V$ 准时 $\lambda$ 不引入偏差 |
+
+- 合起来：$\gamma\lambda$ 越接近 1，远处的 $\delta$ 分到的权重越多；半衰期 $\ln 0.5/\ln(\gamma\lambda)$，0.9405 约 11 步。
+- 两端：$\lambda=0$ 时 $\gamma\lambda=0$，只剩 $\delta_t$（TD(0)，$\gamma$ 仍在 $\delta_t$ 内部）；$\lambda=1$ 时只剩 $\gamma^l$，等于折扣回报减 $V$（蒙特卡洛）。
+- 递推写法 $\hat A_t=\delta_t+\gamma\lambda\,\hat A_{t+1}$（§11.9）：$\gamma\lambda$ 就是"下一步的优势传回来要打的折扣"。
+- RLHF 常取 $\gamma=1$，此时 $\gamma\lambda=\lambda$，衰减全部来自估计方法（§11.12）。
+
 ## 最小示例或实验
 
 本节不挂实验。E4（[[B2-rlhf-learning-to-summarize]] 启动）会用一个小型预训练 LM 实现 §3.1 的 reward model 损失与一轮简化的策略优化，观察 KL 与 reward 的权衡。本卡可以先做一个纸面练习：给两段片段的 reward 之和 3.0 与 1.0，按式 (1) 算 $\hat P[\sigma^1 \succ \sigma^2] = e^3/(e^3+e^1) = \sigma(2) \approx 0.88$；人若选了 $\sigma^2$，损失为 $-\log(1-0.88) \approx 2.1$。
@@ -796,6 +1028,7 @@ $$
 - [图解 PPO](https://claude.ai/artifact/WvB6r5iggPxUCXeBm4RqbS)（ELI5 图解（中文），2026-10-15）：上一页的中文版，术语括注英文。对应 §2.2。
 - [PPO 基线图板](https://claude.ai/artifact/WLVGDQAYB6fWJuiCTsaHNx)（追问图板，2026-10-15）：基线 V(s) 与 GAE 的数据流，λ 两端对照表；图 2、图 3 为 PPO 论文与 RLHF 两种网络结构（value head）；图 4、图 5 为 InstructGPT 三步流程与一轮 PPO 循环；图 6 为逐 token 的 RM / KL / value 量怎么合成总 loss，附 T=4 数值例子；图 7、图 8 为 rollout 与 update 的交替、概率比 ρ_t 的重要性采样本质与 clip。对应 §11.3～§11.8。
 - [PPO × Next-token 训练图板](https://claude.ai/artifact/KcFkoErwZppVLoMdy22Ho3)（追问图板，2026-10-16，少公式版）：InstructGPT 第 3 步的实体与数据流（少公式版）：三步定位、4 模型 + 3 种数据 + 旧策略快照的实体卡、同一词表头的 SFT / PPO 两种来源、rollout → 账本 → update 的数据流转大图、「一个 token 的一生」时序图、账本每列的生产者与消费者血缘图、新旧概率对比为何必要、四模型泳道、六节点压缩图、公开边界四格；06b 块为价值模型的两条路、各位置目标与估值、带 γ 滑块的各位置目标交互图、整条的分典型长什么样（归一化与分差单位表）、γ 的物理意义（当前 vs 未来、三个经典理由、γ 与 λ 分工）、每步奖励 r_t 的来路图与正负号来源（均 2026-10-17 加）、末尾信号向前衰减十张图。公式与 T=4 数值例子留在本卡。对应 §11.9～§11.12。
+- [GAE 前置地图](https://claude.ai/artifact/FCmUPh7gBr9XTDHH6c7W2U)（追问图板，2026-10-22）：理解 GAE 的十个前置，两条线的依赖图与关系表（非 OpenAI）。对应 §11.15（含逐个图解与 λ 滑块）。
 
 ## 掌握证据
 

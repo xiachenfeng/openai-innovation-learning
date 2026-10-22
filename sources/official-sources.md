@@ -122,6 +122,9 @@ openai.com 对 curl、WebFetch 和内置浏览器返回 403，逐页打开需由
 | R-9 | Trust Region Policy Optimization（Schulman 等，UC Berkeley，2015） | B1 前置（PPO 承接的瓶颈） | https://arxiv.org/abs/1502.05477 | 打开确认（2026-10-15，abs 页） |
 | R-10 | Sequence Level Training with RNNs（MIXER，Ranzato 等，Facebook，2015） | B1 §11.1 前史（LM 当策略做序列级 RL 早于 OpenAI） | https://arxiv.org/abs/1511.06732 | 待核验（凭记忆） |
 | R-11 | High-Dimensional Continuous Control Using Generalized Advantage Estimation（GAE，Schulman 等，UC Berkeley，2016） | B1 §11.3 前置（PPO 的优势估计与基线 V(s)） | https://arxiv.org/abs/1506.02438 | 待核验（凭记忆） |
+| R-12 | Learning to Predict by the Methods of Temporal Differences（Sutton，1988，Machine Learning 3） | B1 §11.15 前置（TD(0)、δ_t、TD(λ)） | https://doi.org/10.1007/BF00115009 | 待核验（凭记忆） |
+| R-13 | Simple Statistical Gradient-Following Algorithms for Connectionist RL（REINFORCE，Williams，1992，Machine Learning 8） | B1 §11.15 前置（REINFORCE、基线） | https://doi.org/10.1007/BF00992696 | 待核验（凭记忆） |
+| R-14 | Policy Gradient Methods for RL with Function Approximation（Sutton、McAllester、Singh、Mansour，NeurIPS 1999，2000 出版） | B1 §11.15 前置（策略梯度定理） | NeurIPS 1999 论文集（URL 待补） | 待核验（凭记忆） |
 
 ## Rules
 
