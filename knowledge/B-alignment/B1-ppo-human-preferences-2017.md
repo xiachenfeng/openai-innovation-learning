@@ -7,7 +7,7 @@ status: canonical
 mastery: 0
 importance: 5
 created: 2026-10-15
-updated: 2026-10-22
+updated: 2026-10-23
 source_check: 2026-10-15
 sources:
   - https://arxiv.org/abs/1706.03741
@@ -782,17 +782,17 @@ GAE 是两条线的汇合点：**价值估计线**（蒙特卡洛 → TD → n-s
 %%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
 flowchart TB
   M["⓪ 期望、方差、无偏估计<br/>几何级数"]:::data
-  MDP["① MDP：回报 G_t、折扣 γ"]:::data
+  MDP["① MDP：回报 Gₜ、折扣 γ"]:::data
   V["② 价值函数 V、Q<br/>Bellman 方程"]:::model
   PG["⑦ 策略梯度定理<br/>REINFORCE"]:::model
   MC["③ 蒙特卡洛回报<br/>无偏、方差大"]:::data
-  TD["④ TD(0)：残差 δ_t<br/>方差小、随 V 有偏"]:::data
+  TD["④ TD(0)：残差 δₜ<br/>方差小、随 V 有偏"]:::data
   BL["⑧ 基线 b(s)<br/>减方差、不改期望"]:::model
   NS["⑤ n-step 回报<br/>前 n 步真奖励 + V 收尾"]:::data
   ADV["⑨ 优势 A = Q − V"]:::model
   LAM["⑥ TD(λ)：λ-return<br/>对所有 n-step 指数加权"]:::data
-  AC["⑩ Actor-critic<br/>学一个 V_φ 当基线"]:::model
-  GAE["GAE：Â_t = Σ (γλ)^l δ_{t+l}"]:::loss
+  AC["⑩ Actor-critic<br/>学一个 Vᵩ 当基线"]:::model
+  GAE["GAE：Âₜ = Σ (γλ)ˡ δₜ₊ₗ"]:::loss
   PPO["TRPO + GAE（2015）<br/>PPO 截断 GAE（2017）→ RLHF"]:::frozen
   M --> MDP
   MDP -->|"定义要估的量"| V
@@ -807,7 +807,7 @@ flowchart TB
   NS -->|"不想手选 n"| LAM
   ADV -->|"用网络估 V"| AC
   LAM -->|"λ 加权搬到<br/>优势估计上"| GAE
-  AC -->|"V=V^π 时<br/>E[δ_t] = A"| GAE
+  AC -->|"V 等于真值时<br/>E[δₜ] = A"| GAE
   GAE --> PPO
   classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
   classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
@@ -846,12 +846,12 @@ flowchart TB
 ```mermaid
 %%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
 flowchart TB
-  S0(["s_t"]):::data -->|"动作 a_t"| R0["奖励 r_t"]:::human
-  R0 --> S1(["s_t+1"]):::data
-  S1 -->|"a_t+1"| R1["r_t+1，乘 γ"]:::human
-  R1 --> S2(["s_t+2"]):::data
-  S2 -->|"a_t+2"| R2["r_t+2，乘 γ²"]:::human
-  R2 --> E["… 累加 = G_t"]:::loss
+  S0(["sₜ"]):::data -->|"动作 aₜ"| R0["奖励 rₜ"]:::human
+  R0 --> S1(["sₜ₊₁"]):::data
+  S1 -->|"aₜ₊₁"| R1["rₜ₊₁，乘 γ"]:::human
+  R1 --> S2(["sₜ₊₂"]):::data
+  S2 -->|"aₜ₊₂"| R2["rₜ₊₂，乘 γ²"]:::human
+  R2 --> E["… 累加 = Gₜ"]:::loss
   classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
   classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
   classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
@@ -885,8 +885,8 @@ flowchart TB
 ```mermaid
 %%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
 flowchart TB
-  A(["s_t"]):::data --> B["r_t"]:::human --> C["r_t+1"]:::human --> D["… 直到终点"]:::human
-  D --> G["G_t = 全部相加<br/>无偏、方差大"]:::loss
+  A(["sₜ"]):::data --> B["rₜ"]:::human --> C["rₜ₊₁"]:::human --> D["… 直到终点"]:::human
+  D --> G["Gₜ = 全部相加<br/>无偏、方差大"]:::loss
   classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
   classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
   classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
@@ -896,9 +896,9 @@ flowchart TB
 ```mermaid
 %%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
 flowchart TB
-  A(["s_t，预期 V(s_t)"]):::data --> B["真实奖励 r_t"]:::human --> C(["s_t+1"]):::data
-  C --> D["用 V(s_t+1) 估剩下的"]:::model
-  D --> E["δ_t = r_t + γV(s_t+1) − V(s_t)<br/>方差小、随 V 有偏"]:::loss
+  A(["sₜ，预期 V(sₜ)"]):::data --> B["真实奖励 rₜ"]:::human --> C(["sₜ₊₁"]):::data
+  C --> D["用 V(sₜ₊₁) 估剩下的"]:::model
+  D --> E["δₜ = rₜ + γV(sₜ₊₁) − V(sₜ)<br/>方差小、随 V 有偏"]:::loss
   classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
   classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
   classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
@@ -934,9 +934,9 @@ flowchart TB
 ```mermaid
 %%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
 flowchart TB
-  P["策略 π_θ 采样轨迹"]:::model --> T[("每步记 s_t, a_t")]:::data
-  T --> D["∇log π(a_t|s_t)<br/>让 a_t 更可能的方向"]:::model
-  T --> S["打分 Ψ_t"]:::loss
+  P["策略 π_θ 采样轨迹"]:::model --> T[("每步记 sₜ, aₜ")]:::data
+  T --> D["∇log π(aₜ|sₜ)<br/>让 aₜ 更可能的方向"]:::model
+  T --> S["打分 Ψₜ"]:::loss
   D --> U["方向 × 打分，求平均"]:::model
   S --> U
   U --> TH["更新 θ"]:::model
@@ -957,9 +957,9 @@ flowchart TB
 %%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
 flowchart TB
   ENV["环境"]:::human --> TR[("轨迹 s, a, r")]:::data
-  TR --> CR["critic V_φ"]:::frozen
-  CR --> DL["算 δ_t，再算 Â_t"]:::loss
-  DL --> AC["actor π_θ<br/>按 Â_t 更新"]:::model
+  TR --> CR["critic Vᵩ"]:::frozen
+  CR --> DL["算 δₜ，再算 Âₜ"]:::loss
+  DL --> AC["actor π_θ<br/>按 Âₜ 更新"]:::model
   TR --> FIT["回归回报目标"]:::loss
   FIT --> CR
   AC --> ENV
@@ -996,6 +996,62 @@ $$
 - 两端：$\lambda=0$ 时 $\gamma\lambda=0$，只剩 $\delta_t$（TD(0)，$\gamma$ 仍在 $\delta_t$ 内部）；$\lambda=1$ 时只剩 $\gamma^l$，等于折扣回报减 $V$（蒙特卡洛）。
 - 递推写法 $\hat A_t=\delta_t+\gamma\lambda\,\hat A_{t+1}$（§11.9）：$\gamma\lambda$ 就是"下一步的优势传回来要打的折扣"。
 - RLHF 常取 $\gamma=1$，此时 $\gamma\lambda=\lambda$，衰减全部来自估计方法（§11.12）。
+
+### 11.17 $\gamma\lambda$ 是哪篇论文引入的（2026-10-23 追问）
+
+分三层，出处不同：
+
+| 层 | 内容 | 出处 | 核验 |
+|---|---|---|---|
+| $\lambda$ | 对多步预测按 $\lambda$ 指数加权，即 TD(λ) | Sutton 1988（P-31），原文是不打折的预测问题 | 凭记忆 |
+| $\gamma\lambda$ 作为每步衰减 | 带折扣的 TD(λ)：资格迹每步乘 $\gamma\lambda$ | 强化学习教材与 1989 年前后的 Q(λ) 工作；**最早出处未确定** | 凭记忆 |
+| $\sum(\gamma\lambda)^l\delta_{t+l}$ 用作策略梯度的优势 | 本卡所说的 GAE 公式 | 公式最早见 **Kimura & Kobayashi 1998**（ICML，在线 actor-critic + 资格迹，P-34）与 Wawrzyński 2009（P-35）；**命名为 GAE 并给出偏差—方差分析、用于批量信赖域方法**的是 Schulman 等 2015/2016（P-30） | GAE 论文贡献列表自述"该公式已在先前工作中提出，我们的分析是新的"（搜索命中，2026-10-23） |
+
+结论：说"GAE 引入了 $\gamma\lambda$"不准确。$\gamma\lambda$ 这个组合来自带折扣的 TD(λ)；把它用在优势估计上的公式 1998 年已有；Schulman 等的贡献是名字、分析和在大规模批量策略优化里的用法，PPO 再把它带进 OpenAI（§11.14）。
+
+### 11.18 图板里"像 MC""像 TD"指什么，$(\gamma\lambda)^l$ 是不是乱码（2026-10-23 追问）
+
+- **MC** = 蒙特卡洛（Monte Carlo）回报，§11.15 ③：等轨迹结束，把真实奖励全加起来。**TD** = 时序差分（Temporal Difference），§11.15 ④：只走一步，剩下用 $V$ 的估计补。⓪ 的两个靶子是类比：MC 每次估计都用真实奖励，平均正中靶心（无偏）但散（方差大）；TD 靠 $V$ 猜，很集中（方差小），但 $V$ 不准时整团偏离靶心（有偏）。
+- **$(\gamma\lambda)^l$ 不是乱码**，是"$\gamma\lambda$ 的 $l$ 次方"，$l$ 是往后第几步；图板原先用纯文本写成 `^l`。例：$\gamma\lambda=0.94$ 时 $l=0,1,2,10$ 的权重是 $1,\ 0.94,\ 0.88,\ 0.54$。
+- 图板 V-29 第 3 版已改：⓪ 的标签写全"像 ③ 蒙特卡洛""像 ④ TD"并加一行解释；全页指数改成上标（$\gamma\lambda$ 的 $l$ 次方写作 (γλ)ˡ），下标改成 ₜ₊ₗ 之类。本节 §11.15 的 mermaid 源码同步改了记号。
+
+### 11.19 只有终局一个输赢或打分时，每一步的 $r_t$ 怎么算（2026-10-23 追问）
+
+**结论：** 中间各步 $r_t=0$，最后一步 $r_T=R$（赢 +1、输 −1，或一个分数）。奖励本身不做任何分摊，"哪一步该记功"交给价值函数 $V$ 和 GAE：$\delta_t=r_t+\gamma V(s_{t+1})-V(s_t)$ 在中间步退化为 $\gamma V(s_{t+1})-V(s_t)$，即**这一步让局面估值涨了多少**。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  S0(["s₀"]):::data -->|"r = 0"| S1(["s₁"]):::data
+  S1 -->|"r = 0"| S2(["s₂"]):::data
+  S2 -->|"r = 0"| S3(["s₃"]):::data
+  S3 -->|"r = 终局分 R"| E["结束"]:::loss
+  E --> G["γ=1 时每一步的回报都是 R<br/>分不出哪一步好"]:::frozen
+  G --> F["δₜ = 这一步让 V 涨了多少<br/>把功劳分给改变局面的那一步"]:::model
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+例子：$\gamma=1$，赢了 $R=1$；$V$ 是 critic 估的胜率，第 1 步之后从 0.5 跳到 0.8（数值为示意）。
+
+| 步 t | `r_t` | `V(s_t)` | `δ_t` | λ=0 | λ=0.95 | λ=1（MC） |
+|---|---|---|---|---|---|---|
+| 0 | 0 | 0.5 | 0 | 0 | 0.46 | 0.5 |
+| 1 关键一手 | 0 | 0.5 | +0.3 | 0.3 | 0.48 | 0.5 |
+| 2 | 0 | 0.8 | 0 | 0 | 0.19 | 0.2 |
+| 3 终局 | 1 | 0.8 | +0.2 | 0.2 | 0.2 | 0.2 |
+
+（$V(s_4)=0$ 为终止状态；λ=0.95 列按递推 $\hat A_t=\delta_t+\gamma\lambda\hat A_{t+1}$ 从后往前算。）
+
+- **只用 MC（λ=1）**：每一步的优势都是 $R-V(s_t)$，赢局里所有动作一起被推高、输局里一起被压低，只能靠大量对局平均出哪些动作真正有用，方差大。这就是稀疏奖励的**信用分配**问题。
+- **TD（λ=0）**：功劳落在让胜率跳起来的第 1 步；前提是 $V$ 估得准，$V$ 不准时功劳会记错（偏差）。
+- **λ=0.95**：在两者之间，终局信号按 $(\gamma\lambda)^l$ 往前传，同时保留 $V$ 跳变处的局部信号。
+- **RLHF 就是这种情形**：奖励模型只给整条回答一个分，放在最后一个 token；另外每个 token 加一笔 KL 偏离罚，见 §11.11。
+- **另外两条路（不在本节展开）**：给中间步设计额外奖励（reward shaping；用势函数差的形式可不改变最优策略，Ng 等 1999，非 OpenAI，凭记忆）；或者训练一个逐步打分的过程奖励模型（PRM），属 Track C，见 [[C1-process-vs-outcome-supervision]]。
+- 图板 V-29 第 5 版"附"一节是本节的图与表。
 
 ## 最小示例或实验
 

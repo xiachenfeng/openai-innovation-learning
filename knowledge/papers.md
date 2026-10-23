@@ -48,6 +48,9 @@ tags: [openai, hub, papers]
 | P-31 | Learning to Predict by the Methods of Temporal Differences（Sutton） | 1988 | 非 OpenAI，前置（R-12） | B1 §11.15 | 无（凭记忆） | 仅提及 |
 | P-32 | Simple Statistical Gradient-Following Algorithms（REINFORCE，Williams） | 1992 | 非 OpenAI，前置（R-13） | B1 §11.15 | 无（凭记忆） | 仅提及 |
 | P-33 | Policy Gradient Methods for RL with Function Approximation（Sutton 等） | 2000 | 非 OpenAI，前置（R-14） | B1 §11.15 | 无（凭记忆） | 仅提及 |
+| P-34 | An Analysis of Actor/Critic Algorithms Using Eligibility Traces（Kimura、Kobayashi） | 1998 | 非 OpenAI，前史（R-15） | B1 §11.17 | 无 | 仅提及 |
+| P-35 | Real-time Reinforcement Learning by Sequential Actor–Critics and Experience Replay（Wawrzyński） | 2009 | 非 OpenAI，前史（R-16） | B1 §11.17 | 无（题名凭记忆） | 仅提及 |
+| P-36 | Policy Invariance under Reward Transformations（reward shaping，Ng、Harada、Russell） | 1999 | 非 OpenAI，对照（R-17） | B1 §11.19 | 无（凭记忆） | 仅提及 |
 
 ## 逐篇
 
@@ -386,7 +389,7 @@ tags: [openai, hub, papers]
 
 ### P-30 High-Dimensional Continuous Control Using Generalized Advantage Estimation（Schulman、Moritz、Levine、Jordan、Abbeel，UC Berkeley，2016）
 
-- 来源级别：非 OpenAI，前置（R-11）。凭记忆引用，待核对公式编号。
+- 来源级别：非 OpenAI，前置（R-11）。贡献列表与相关工作 2026-10-23 经搜索命中 arXiv v5 核对；公式编号仍凭记忆。
 - 课程节点：B1 §11.3（2026-10-15）。
 - 已读章节：§3 的 δ_t 定义与 GAE(γ, λ) 的指数加权和；λ 在 TD(0) 与蒙特卡洛回报之间插值的解释。
 
@@ -394,6 +397,7 @@ tags: [openai, hub, papers]
 |---|---|
 | [[B1-ppo-human-preferences-2017]] §11.3 | 优势 = 实际回报 − 基线 V(s)；减去不依赖动作的基线不改变梯度期望；λ 的偏差—方差权衡 |
 | [[B1-ppo-human-preferences-2017]] §11.14 | 题名、作者、arXiv 1506.02438、ICLR 2016；λ=0 为一步 TD、λ=1 为蒙特卡洛；实验为 TRPO + GAE 的 MuJoCo 运动控制（凭记忆） |
+| [[B1-ppo-human-preferences-2017]] §11.17 | 贡献列表：公式已由 Kimura & Kobayashi 1998、Wawrzyński 2009 提出，本文的分析是新的、适用于在线与批量两种设定（搜索命中 arXiv v5，2026-10-23） |
 | [[B1-ppo-human-preferences-2017]] §11.15 | §2 Ψ_t 的六种取法；§3 k 步优势 Â^(k) 与其指数加权化简为 Σ(γλ)^l δ_{t+l}；V=V^π 时 E[δ_t] = A；用信赖域拟合 V_φ（凭记忆） |
 
 ### P-31 Learning to Predict by the Methods of Temporal Differences（Sutton，1988）
@@ -425,6 +429,36 @@ tags: [openai, hub, papers]
 | 知识点 | 引用了什么 |
 |---|---|
 | [[B1-ppo-human-preferences-2017]] §11.15 | 策略梯度定理：∇J = E[∇log π(a\|s) · Q(s,a)]，可用函数逼近的 critic |
+
+### P-34 An Analysis of Actor/Critic Algorithms Using Eligibility Traces: Reinforcement Learning with Imperfect Value Function（Kimura、Kobayashi，ICML 1998）
+
+- 来源级别：非 OpenAI，前史（R-15）。
+- 课程节点：B1 §11.17（2026-10-23）。
+- 已读章节：无；题名据 Berkeley CS285 讲义引用。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.17 | 被 GAE 论文认作同一公式的早期出处（在线 actor-critic + 资格迹） |
+
+### P-35 Real-time Reinforcement Learning by Sequential Actor–Critics and Experience Replay（Wawrzyński，2009）
+
+- 来源级别：非 OpenAI，前史（R-16）。
+- 课程节点：B1 §11.17（2026-10-23）。
+- 已读章节：无；题名凭记忆，GAE 论文只确认了"Wawrzyński 2009"。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.17 | 被 GAE 论文认作同一公式的早期出处之一 |
+
+### P-36 Policy Invariance under Reward Transformations: Theory and Application to Reward Shaping（Ng、Harada、Russell，ICML 1999）
+
+- 来源级别：非 OpenAI，对照（R-17）。
+- 课程节点：B1 §11.19（2026-10-23）。
+- 已读章节：无，凭记忆引用。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.19 | 势函数差形式的 shaping 奖励不改变最优策略，作为稀疏终局奖励的另一条路 |
 
 ### P-19 Direct Preference Optimization（Rafailov 等，2023）
 

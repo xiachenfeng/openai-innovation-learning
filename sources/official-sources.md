@@ -121,10 +121,13 @@ openai.com 对 curl、WebFetch 和内置浏览器返回 403，逐页打开需由
 | R-8 | Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks（Finn、Abbeel、Levine，2017） | A5 §11.15 对照（显式梯度式 meta-learning 与 ICL 的对照） | https://arxiv.org/abs/1703.03400 | 知识确认 |
 | R-9 | Trust Region Policy Optimization（Schulman 等，UC Berkeley，2015） | B1 前置（PPO 承接的瓶颈） | https://arxiv.org/abs/1502.05477 | 打开确认（2026-10-15，abs 页） |
 | R-10 | Sequence Level Training with RNNs（MIXER，Ranzato 等，Facebook，2015） | B1 §11.1 前史（LM 当策略做序列级 RL 早于 OpenAI） | https://arxiv.org/abs/1511.06732 | 待核验（凭记忆） |
-| R-11 | High-Dimensional Continuous Control Using Generalized Advantage Estimation（GAE，Schulman 等，UC Berkeley，2016） | B1 §11.3 前置（PPO 的优势估计与基线 V(s)） | https://arxiv.org/abs/1506.02438 | 待核验（凭记忆） |
+| R-11 | High-Dimensional Continuous Control Using Generalized Advantage Estimation（GAE，Schulman 等，UC Berkeley，2016） | B1 §11.3 前置（PPO 的优势估计与基线 V(s)） | https://arxiv.org/abs/1506.02438 | 搜索命中（2026-10-23，arXiv v5 贡献列表） |
 | R-12 | Learning to Predict by the Methods of Temporal Differences（Sutton，1988，Machine Learning 3） | B1 §11.15 前置（TD(0)、δ_t、TD(λ)） | https://doi.org/10.1007/BF00115009 | 待核验（凭记忆） |
 | R-13 | Simple Statistical Gradient-Following Algorithms for Connectionist RL（REINFORCE，Williams，1992，Machine Learning 8） | B1 §11.15 前置（REINFORCE、基线） | https://doi.org/10.1007/BF00992696 | 待核验（凭记忆） |
 | R-14 | Policy Gradient Methods for RL with Function Approximation（Sutton、McAllester、Singh、Mansour，NeurIPS 1999，2000 出版） | B1 §11.15 前置（策略梯度定理） | NeurIPS 1999 论文集（URL 待补） | 待核验（凭记忆） |
+| R-15 | An Analysis of Actor/Critic Algorithms Using Eligibility Traces（Kimura、Kobayashi，ICML 1998） | B1 §11.17 前史（GAE 公式的早期出处） | URL 待补（题名见 Berkeley CS285 lec 6 讲义） | 搜索命中（2026-10-23，二手引用） |
+| R-16 | Real-time Reinforcement Learning by Sequential Actor–Critics and Experience Replay（Wawrzyński，2009，Neural Networks） | B1 §11.17 前史（GAE 公式的早期出处之一） | URL 待补 | 待核验（题名凭记忆） |
+| R-17 | Policy Invariance under Reward Transformations（Ng、Harada、Russell，ICML 1999） | B1 §11.19 对照（稀疏奖励的 reward shaping） | URL 待补 | 待核验（凭记忆） |
 
 ## Rules
 
