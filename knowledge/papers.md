@@ -51,6 +51,8 @@ tags: [openai, hub, papers]
 | P-34 | An Analysis of Actor/Critic Algorithms Using Eligibility Traces（Kimura、Kobayashi） | 1998 | 非 OpenAI，前史（R-15） | B1 §11.17 | 无 | 仅提及 |
 | P-35 | Real-time Reinforcement Learning by Sequential Actor–Critics and Experience Replay（Wawrzyński） | 2009 | 非 OpenAI，前史（R-16） | B1 §11.17 | 无（题名凭记忆） | 仅提及 |
 | P-36 | Policy Invariance under Reward Transformations（reward shaping，Ng、Harada、Russell） | 1999 | 非 OpenAI，对照（R-17） | B1 §11.19 | 无（凭记忆） | 仅提及 |
+| P-37 | DeepSeekMath（GRPO，Shao 等） | 2024 | 非 OpenAI，对照（R-18） | B1 §11.3、§11.20 | 无（凭记忆） | 仅提及 |
+| P-38 | What's Behind PPO's Collapse in Long-CoT? Value Optimization Holds the Secret（VC-PPO，Yuan 等） | 2025 | 非 OpenAI，对照（R-19） | B1 §11.20 | 摘要（搜索命中） | 仅提及 |
 
 ## 逐篇
 
@@ -459,6 +461,27 @@ tags: [openai, hub, papers]
 | 知识点 | 引用了什么 |
 |---|---|
 | [[B1-ppo-human-preferences-2017]] §11.19 | 势函数差形式的 shaping 奖励不改变最优策略，作为稀疏终局奖励的另一条路 |
+
+### P-37 DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models（Shao 等，DeepSeek，2024）
+
+- 来源级别：非 OpenAI，对照（R-18）。
+- 课程节点：B1 §11.3 提及（2026-10-15，当时未入账，2026-10-23 补录）、§11.20。
+- 已读章节：无，凭记忆引用。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.3 | GRPO 不训价值模型，用同一 prompt 多个采样的组内均分当基线 |
+| [[B1-ppo-human-preferences-2017]] §11.20 | 整条回答一个优势，所有 token 共用，没有逐 token 功劳区分 |
+
+### P-38 What's Behind PPO's Collapse in Long-CoT? Value Optimization Holds the Secret（Yuan、Yue、Zhu、Fan、Yan，ByteDance Seed，2025）
+
+- 来源级别：非 OpenAI，对照（R-19）。
+- 课程节点：B1 §11.20（2026-10-23）。
+- 已读章节：摘要（搜索命中 arXiv 2503.01491）；解耦 GAE 的具体 λ 值来自二手综述，待核对。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.20 | 长 CoT 下 PPO 崩溃的两个原因：价值初始化偏差、奖励信号衰减；补救为价值模型预训练与 actor/critic 解耦 GAE（critic λ=1，据二手综述） |
 
 ### P-19 Direct Preference Optimization（Rafailov 等，2023）
 

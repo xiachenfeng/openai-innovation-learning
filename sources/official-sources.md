@@ -128,6 +128,8 @@ openai.com 对 curl、WebFetch 和内置浏览器返回 403，逐页打开需由
 | R-15 | An Analysis of Actor/Critic Algorithms Using Eligibility Traces（Kimura、Kobayashi，ICML 1998） | B1 §11.17 前史（GAE 公式的早期出处） | URL 待补（题名见 Berkeley CS285 lec 6 讲义） | 搜索命中（2026-10-23，二手引用） |
 | R-16 | Real-time Reinforcement Learning by Sequential Actor–Critics and Experience Replay（Wawrzyński，2009，Neural Networks） | B1 §11.17 前史（GAE 公式的早期出处之一） | URL 待补 | 待核验（题名凭记忆） |
 | R-17 | Policy Invariance under Reward Transformations（Ng、Harada、Russell，ICML 1999） | B1 §11.19 对照（稀疏奖励的 reward shaping） | URL 待补 | 待核验（凭记忆） |
+| R-18 | DeepSeekMath（GRPO，Shao 等，DeepSeek，2024） | B1 §11.3、§11.20 对照（无价值模型的组内基线） | https://arxiv.org/abs/2402.03300 | 待核验（凭记忆） |
+| R-19 | What's Behind PPO's Collapse in Long-CoT?（VC-PPO，Yuan 等，ByteDance Seed，2025） | B1 §11.20 对照（长序列下价值模型与 GAE 衰减） | https://arxiv.org/abs/2503.01491 | 搜索命中（2026-10-23） |
 
 ## Rules
 

@@ -1053,6 +1053,61 @@ flowchart TB
 - **另外两条路（不在本节展开）**：给中间步设计额外奖励（reward shaping；用势函数差的形式可不改变最优策略，Ng 等 1999，非 OpenAI，凭记忆）；或者训练一个逐步打分的过程奖励模型（PRM），属 Track C，见 [[C1-process-vs-outcome-supervision]]。
 - 图板 V-29 第 5 版"附"一节是本节的图与表。
 
+### 11.20 序列很长时，PPO 怎么保证"有效视野"够远（2026-10-23 追问）
+
+**结论：PPO 本身不保证。** clip 只限制每次更新走多远，和视野无关。视野由三样东西决定：$\gamma$（目标打不打折）、$\lambda$（末尾信号直接往前传多远）、价值模型 $V$（传不到的地方靠它补）。
+
+先分清两种"视野"：
+
+| | 看得见多少前文 | 功劳能往前传多远 |
+|---|---|---|
+| 由谁决定 | Transformer 上下文窗口（[[A1-transformer-decoder-next-token]]） | $\gamma$、$\lambda$、$V$ |
+| 预训练 next-token | 不涉及传功劳：每个位置都有自己的监督信号 | 不涉及 |
+| RL 阶段长序列 | 窗口够长就全看得见 | 末尾分逐 token 打折，要靠 $V$ 补 |
+
+**$\gamma$ 不是瓶颈。** RLHF 常取 $\gamma=1$（§11.12），目标本身不打折，有效视野 $1/(1-\gamma)$ 为无穷。
+
+**$\lambda$ 才是。** $\gamma=1$ 时末尾分传到前面第 $l$ 个 token 的份额是 $\lambda^l$：
+
+| 离末尾 $l$ | 10 | 14 | 50 | 100 | 500 |
+|---|---|---|---|---|---|
+| $0.95^l$ | 0.60 | 0.49 | 0.077 | 0.006 | $7\times10^{-12}$ |
+
+半衰期约 13.5 个 token。几百 token 之前的位置几乎收不到末尾分的直传，只能靠 $\delta_t=V(s_{t+1})-V(s_t)$：$V(s_t)$ 本身就在预测"从这个前缀出发最终能得几分"，所以 $V$ 的变化携带了远处的信息。这就把"视野"转成了"$V$ 估得准不准"。
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 24, "rankSpacing": 22, "padding": 10}, "themeVariables": {"fontSize": "13px"}}}%%
+flowchart TB
+  R["末尾 token：r_T = 奖励模型分"]:::loss
+  P1["路一：直接往前传<br/>每过一个 token 乘 γλ"]:::data
+  P2["路二：经价值模型 V<br/>V(sₜ) 直接预测最终分"]:::model
+  F1["γ=1、λ=0.95<br/>100 个 token 后只剩 0.6%"]:::frozen
+  F2["δₜ = V(sₜ₊₁) − V(sₜ)<br/>前段 token 靠 V 的变化拿信号"]:::model
+  RISK["V 在长序列上估不准<br/>前段优势有偏"]:::loss
+  FIX["补救：critic 用 λ=1、预训练 V<br/>或去掉 critic"]:::human
+  R --> P1 --> F1
+  R --> P2 --> F2 --> RISK --> FIX
+  classDef data  fill:#EEF3FA,stroke:#3B6BB3,color:#111
+  classDef model fill:#FFF4E0,stroke:#D98E04,color:#111
+  classDef frozen fill:#F2F2F2,stroke:#888,color:#333,stroke-dasharray:4 3
+  classDef loss  fill:#FDECEC,stroke:#C0392B,color:#111
+  classDef human fill:#EAF7EE,stroke:#2E8B57,color:#111
+```
+
+**$V$ 的目标同样会衰减。** PPO 的价值目标 $V^{\mathrm{targ}}_t=\hat A_t+V_{\mathrm{old}}(s_t)$ 是 λ-return，也按 $\lambda^l$ 衰减；末尾分要经过多轮更新、靠自举一段段往前挪。$V$ 从 RM 或 SFT 初始化时起点有偏，长序列上更难校准。
+
+| 做法 | 末尾信号怎么到前面 | 代价 | 出处 |
+|---|---|---|---|
+| $\gamma=1$，$\lambda=0.95$ | 直传十几个 token，再往前靠 $V$ 的变化 | $V$ 不准则前段优势有偏 | PPO 默认 λ（§3.2）；RLHF 的 γ（§11.12） |
+| $\lambda=1$ | 不打折：每个 token 的优势都是 $R-V(s_t)$ | 方差大（§11.19 MC 列） | GAE 的 MC 一端 |
+| 解耦 GAE + 预训练 $V$ | critic 用 $\lambda=1$ 学无衰减目标，actor 仍用较小 λ | 多一个超参 | VC-PPO（Yuan 等，ByteDance，2025，P-38，非 OpenAI；具体 λ 值据二手综述，待核对原文） |
+| 去掉 critic | 整条回答一个优势，所有 token 共用 | 没有逐 token 的功劳区分 | GRPO（DeepSeekMath，2024，P-37，非 OpenAI；本卡 §11.3 已提及） |
+
+> [!danger] Unknown
+> OpenAI 在 o1 及之后的长推理模型上用什么 RL 算法、$\lambda$ 取多少、有没有价值模型，都没有公开。上表只说明公开的通用做法，不能用来推断 OpenAI 的实现。InstructGPT 具体的 $\gamma$、$\lambda$ 取值本卡尚未核对。
+
+图板 V-29 第 6 版"附 2"是本节的图与表。
+
 ## 最小示例或实验
 
 本节不挂实验。E4（[[B2-rlhf-learning-to-summarize]] 启动）会用一个小型预训练 LM 实现 §3.1 的 reward model 损失与一轮简化的策略优化，观察 KL 与 reward 的权衡。本卡可以先做一个纸面练习：给两段片段的 reward 之和 3.0 与 1.0，按式 (1) 算 $\hat P[\sigma^1 \succ \sigma^2] = e^3/(e^3+e^1) = \sigma(2) \approx 0.88$；人若选了 $\sigma^2$，损失为 $-\log(1-0.88) \approx 2.1$。
