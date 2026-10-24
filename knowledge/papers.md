@@ -53,6 +53,8 @@ tags: [openai, hub, papers]
 | P-36 | Policy Invariance under Reward Transformations（reward shaping，Ng、Harada、Russell） | 1999 | 非 OpenAI，对照（R-17） | B1 §11.19 | 无（凭记忆） | 仅提及 |
 | P-37 | DeepSeekMath（GRPO，Shao 等） | 2024 | 非 OpenAI，对照（R-18） | B1 §11.3、§11.20 | 无（凭记忆） | 仅提及 |
 | P-38 | What's Behind PPO's Collapse in Long-CoT? Value Optimization Holds the Secret（VC-PPO，Yuan 等） | 2025 | 非 OpenAI，对照（R-19） | B1 §11.20 | 摘要（搜索命中） | 仅提及 |
+| P-39 | OpenAI o1 System Card | 2024 | OpenAI（C-4） | B1 §11.21，C2 待学 | 引言的 RL 表述（搜索命中） | 仅提及 |
+| P-40 | Deliberative Alignment | 2024 | OpenAI（B-10） | B1 §11.21，B5 待学 | 无（凭记忆） | 仅提及 |
 
 ## 逐篇
 
@@ -482,6 +484,26 @@ tags: [openai, hub, papers]
 | 知识点 | 引用了什么 |
 |---|---|
 | [[B1-ppo-human-preferences-2017]] §11.20 | 长 CoT 下 PPO 崩溃的两个原因：价值初始化偏差、奖励信号衰减；补救为价值模型预训练与 actor/critic 解耦 GAE（critic λ=1，据二手综述） |
+
+### P-39 OpenAI o1 System Card（OpenAI，2024-09 / 2024-12 更新；arXiv 2412.16720）
+
+- 来源级别：OpenAI 官方（C-4）。
+- 课程节点：B1 §11.21 提及（2026-10-23），C2 待学。
+- 已读章节：引言一句（搜索命中），正文未读。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.21 | o 系列"用大规模 RL 训练成用 CoT 推理"；能在上下文中推理安全政策 |
+
+### P-40 Deliberative Alignment: Reasoning Enables Safer Language Models（OpenAI，2024-12）
+
+- 来源级别：OpenAI 官方（B-10）。
+- 课程节点：B1 §11.21 提及（2026-10-23），B5 待学。
+- 已读章节：无，凭记忆。
+
+| 知识点 | 引用了什么 |
+|---|---|
+| [[B1-ppo-human-preferences-2017]] §11.21 | SFT + RL 两步；RL 用可读安全规范的判官奖励模型打分（凭记忆） |
 
 ### P-19 Direct Preference Optimization（Rafailov 等，2023）
 

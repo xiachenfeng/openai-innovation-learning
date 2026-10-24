@@ -1,6 +1,6 @@
 # Source Status
 
-Last checked: 2026-09-19（限定 openai.com 域名的搜索；页面未打开。上一次 2026-09-13）
+Last checked: 2026-10-23（限定 openai.com 域名的搜索，只查 o1 RL 表述；页面未打开。上一次全面检查 2026-09-19）
 
 ## Current Public Frontier
 
@@ -22,7 +22,7 @@ Last checked: 2026-09-19（限定 openai.com 域名的搜索；页面未打开�
 ## Watch List
 
 - GPT-6 Astra 的 system card 中是否披露新的训练或推理机制
-- 新 reasoning-training 出版物
+- 新 reasoning-training 出版物（2026-10-23 搜索：o1 博客与 system card 仍只有 "large-scale RL" 的表述，无算法细节；见 B1 §11.21）
 - Agent orchestration 与 compaction 研究
 - Open-weight 模型更新
 - Voice 架构论文

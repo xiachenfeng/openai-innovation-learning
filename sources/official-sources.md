@@ -54,8 +54,8 @@ openai.com 对 curl、WebFetch 和内置浏览器返回 403，逐页打开需由
 |---|---|---|---|
 | C-1 | Process Supervision（Let's Verify Step by Step） | https://openai.com/index/improving-mathematical-reasoning-with-process-supervision/ | 知识确认 |
 | C-2 | PRM800K 数据集 | https://github.com/openai/prm800k | 待核验 |
-| C-3 | o1 Learning to Reason | https://openai.com/index/learning-to-reason-with-llms/ | 知识确认 |
-| C-4 | o1 System Card | https://openai.com/index/openai-o1-system-card/ | 待核验 |
+| C-3 | o1 Learning to Reason | https://openai.com/index/learning-to-reason-with-llms/ | 搜索命中（2026-10-23） |
+| C-4 | o1 System Card | https://openai.com/index/openai-o1-system-card/ | 搜索命中（2026-10-23，cdn PDF 与 arXiv 2412.16720） |
 | C-5 | o3 and o4-mini | https://openai.com/index/introducing-o3-and-o4-mini/ | 知识确认 |
 | C-6 | Introducing GPT-5 | https://openai.com/index/introducing-gpt-5/ | 知识确认 |
 | C-7 | GPT-5 System Card | https://openai.com/index/gpt-5-system-card/ | 知识确认 |
